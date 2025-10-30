@@ -1,0 +1,88 @@
+use crate::ast::{Var, LabelType, SimpleType, BaseType, PropertyType, DescriptorType, Descriptor, ElementPatternFiller, NodePattern};
+use std::collections::HashMap;
+
+grammar;
+
+pub LabelType: LabelType = {
+    #[precedence(level="2")] #[assoc(side="left")]
+    <l:LabelType> "|" <r:LabelType> => LabelType::Or(Box::new(l), Box::new(r)),
+    
+    #[precedence(level="1")] #[assoc(side="left")]
+    <l:LabelType> "&" <r:LabelType> => LabelType::And(Box::new(l), Box::new(r)),
+    
+    #[precedence(level="0")]
+    "*" => LabelType::Star,
+    <Name> => LabelType::Label(<>),
+    "(" <LabelType> ")",
+};
+
+pub SimpleType: SimpleType = {
+    <BaseType> => SimpleType::Base(<>),
+    "*" => SimpleType::Star,
+};
+
+BaseType: BaseType = {
+    "int" => BaseType::Int,
+    "bool" => BaseType::Bool,
+    "str" => BaseType::String,
+};
+
+pub PropertyType: PropertyType = {
+    "{" "}" => PropertyType::Open(HashMap::new()),
+    "{" <RecordElements> "}" => PropertyType::Open(<>),
+    "{{" "}}" => PropertyType::Closed(HashMap::new()),
+    "{{" <RecordElements> "}}" => PropertyType::Closed(<>),
+};
+
+RecordElements: HashMap<String, SimpleType> = {
+    <elem:RecordElement> => {
+        let mut map = HashMap::new();
+        map.insert(elem.0, elem.1);
+        map
+    },
+    <mut map:RecordElements> "," <elem:RecordElement> => {
+        map.insert(elem.0, elem.1);
+        map
+    },
+};
+
+RecordElement: (String, SimpleType) = {
+    <Name> ":" <SimpleType> => (<>),
+};
+
+pub DescriptorType: DescriptorType = {
+    <label:LabelType> <props:PropertyType> => DescriptorType { label, properties: props },
+    <label:LabelType> => DescriptorType { label, properties: PropertyType::Open(HashMap::new()) },
+    <props:PropertyType> => DescriptorType { label: LabelType::Star, properties: props },
+};
+
+pub Descriptor: Descriptor = {
+    <var:Name> ":" <ty:DescriptorType> => Descriptor { variable: Some(Var(var)), descriptor_type: ty },
+    ":" <ty:DescriptorType> => Descriptor { variable: None, descriptor_type: ty },
+    <var:Name> => Descriptor { 
+        variable: Some(Var(var)), 
+        descriptor_type: DescriptorType { 
+            label: LabelType::Star, 
+            properties: PropertyType::Open(HashMap::new()) 
+        }
+    },
+    => Descriptor { 
+        variable: None, 
+        descriptor_type: DescriptorType { 
+            label: LabelType::Star, 
+            properties: PropertyType::Open(HashMap::new()) 
+        }
+    },
+};
+
+[#inline]
+pub ElementPatternFiller: ElementPatternFiller = {
+    <desc:Descriptor> => ElementPatternFiller { descriptor: desc },
+};
+
+pub NodePattern: NodePattern = {
+    "(" <filler:ElementPatternFiller> ")" => NodePattern { filler },
+};
+
+
+Name: String = r"[a-zA-Z_][a-zA-Z0-9_]*" => <>.to_string();

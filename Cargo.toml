@@ -1,0 +1,11 @@
+[package]
+name = "fppc"
+version = "0.1.0"
+authors = ["Felipe Avendaño <favendano.cse@gmail.com>"]
+edition = "2024"
+
+[dependencies]
+lalrpop-util = { version = "0.21.0", features = ["lexer", "unicode"] }
+
+[build-dependencies]
+lalrpop = "0.22.2"
