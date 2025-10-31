@@ -1,0 +1,23 @@
+
+// ElementPatternFiller: intermediary grammar helper
+// Syntactic Sugar for FilterPattern with no nesting
+// Returns (Descriptor, Option<Expr>)
+ElementPatternFiller: (Descriptor, Option<Expr>) = {
+    <desc:Descriptor> => (desc, None),
+    <desc:Descriptor> WHERE <expr:Expr> => (desc, Some(expr)),
+};
+
+WHERE: () = { "where", "WHERE" };
+
+pub PathPattern: PathPattern = {
+    "(" <filler:ElementPatternFiller> ")" => {
+        match filler {
+            (desc, None) => PathPattern::Node(NodePattern { descriptor: desc }),
+            (desc, Some(expr)) => PathPattern::Filter(
+                Box::new(PathPattern::Node(NodePattern { descriptor: desc })),
+                expr
+            ),
+        }
+    },
+};
+

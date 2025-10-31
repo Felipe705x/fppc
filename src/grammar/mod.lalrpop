@@ -1,0 +1,7 @@
+use crate::ast::{Var, LabelType, SimpleType, BaseType, PropertyType, DescriptorType, Descriptor, NodePattern, PathPattern, Expr, Constant, AttributeLookup, Binop, Unop, BinOpKind, UnOpKind};
+use std::collections::HashMap;
+
+grammar;
+
+Name: String = r"[a-zA-Z_][a-zA-Z0-9_]*" => <>.to_string();
+

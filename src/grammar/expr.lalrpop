@@ -1,0 +1,66 @@
+pub Expr: Expr = {
+    #[precedence(level="5")] #[assoc(side="left")]
+    <l:Expr> AND <r:Expr> => Expr::Binop(Binop::new(BinOpKind::And, l, r)),
+    <l:Expr> OR <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Or, l, r)),
+    
+    #[precedence(level="4")] #[assoc(side="left")]
+    <l:Expr> "<" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Lt, l, r)),
+    <l:Expr> ">" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Gt, l, r)),
+    <l:Expr> "<=" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Le, l, r)),
+    <l:Expr> ">=" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Ge, l, r)),
+    <l:Expr> "=" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Eq, l, r)),
+    <l:Expr> IS <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Is, l, r)),
+    <l:Expr> AS <r:Expr> => Expr::Binop(Binop::new(BinOpKind::As, l, r)),
+    
+    #[precedence(level="3")] #[assoc(side="left")]
+    <l:Expr> "+" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Add, l, r)),
+    <l:Expr> "-" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Sub, l, r)),
+    
+    #[precedence(level="2")] #[assoc(side="left")]
+    <l:Expr> "*" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Mul, l, r)),
+    <l:Expr> "/" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Div, l, r)),
+    
+    #[precedence(level="1")]
+    NOT <e:Expr> => Expr::Unop(Unop::new(UnOpKind::Not, e)),
+    "-" <e:Expr> => Expr::Unop(Unop::new(UnOpKind::Neg, e)),
+    
+    #[precedence(level="0")]
+    <ExprPrimary>,
+};
+
+AND: () = { "and", "AND" };
+OR: () = { "or", "OR" };
+NOT: () = { "not", "NOT" };
+IS: () = { "is", "IS" };
+AS: () = { "as", "AS" };
+
+ExprPrimary: Expr = {
+    <ExprConstant> => Expr::Constant(<>),
+    <v:Name> "." <a:Name> => Expr::AttributeLookup(AttributeLookup::new(Var(v), Var(a))),
+    <SimpleType> => Expr::TypeLiteral(<>),
+    <Name> => Expr::Variable(Var(<>)),
+    "(" <Expr> ")",
+};
+
+ExprConstant: Constant = {
+    <Number> => Constant::Int(<>),
+    <Boolean> => Constant::Bool(<>),
+    <String> => Constant::String(<>),
+};
+
+Number: i64 = r"\d+" => <>.parse().unwrap();
+
+Boolean: bool = {
+    TRUE => true,
+    FALSE => false,
+};
+
+TRUE: () = { "true", "TRUE" };
+FALSE: () = { "false", "FALSE" };
+
+String: String = {
+    r#"'[^']*'"# => {
+        let s = <>;
+        s[1..s.len()-1].to_string()
+    },
+};

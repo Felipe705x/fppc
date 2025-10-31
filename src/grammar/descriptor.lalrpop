@@ -1,0 +1,26 @@
+
+pub DescriptorType: DescriptorType = {
+    <label:LabelType> <props:PropertyType> => DescriptorType { label, properties: props },
+    <label:LabelType> => DescriptorType { label, properties: PropertyType::Open(HashMap::new()) },
+    <props:PropertyType> => DescriptorType { label: LabelType::Star, properties: props },
+};
+
+pub Descriptor: Descriptor = {
+    <var:Name> ":" <ty:DescriptorType> => Descriptor { variable: Some(Var(var)), descriptor_type: ty },
+    ":" <ty:DescriptorType> => Descriptor { variable: None, descriptor_type: ty },
+    <var:Name> => Descriptor { 
+        variable: Some(Var(var)), 
+        descriptor_type: DescriptorType { 
+            label: LabelType::Star, 
+            properties: PropertyType::Open(HashMap::new()) 
+        }
+    },
+    => Descriptor { 
+        variable: None, 
+        descriptor_type: DescriptorType { 
+            label: LabelType::Star, 
+            properties: PropertyType::Open(HashMap::new()) 
+        }
+    },
+};
+

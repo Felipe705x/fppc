@@ -1,4 +1,4 @@
-use ::fppc::*;
+use fppc::*;
 use std::io::{self, Write};
 
 fn main() {
@@ -9,8 +9,8 @@ fn main() {
     println!("  property <input>   - Parse as PropertyType");
     println!("  descriptor_type <input> - Parse as DescriptorType");
     println!("  descriptor <input> - Parse as Descriptor");
-    println!("  filler <input>     - Parse as ElementPatternFiller");
-    println!("  node <input>       - Parse as NodePattern");
+    println!("  path <input>       - Parse as PathPattern");
+    println!("  expr <input>       - Parse as Expr");
     println!("  quit               - Exit");
     println!();
 
@@ -74,20 +74,20 @@ fn main() {
                     Err(e) => eprintln!("✗ Parse error: {}", e),
                 }
             }
-            "filler" => {
-                match ElementPatternFillerParser::new().parse(parse_input) {
+            "path" => {
+                match PathPatternParser::new().parse(parse_input) {
                     Ok(result) => println!("✓ Valid: {:?}", result),
                     Err(e) => eprintln!("✗ Parse error: {}", e),
                 }
             }
-            "node" => {
-                match NodePatternParser::new().parse(parse_input) {
+            "expr" => {
+                match ExprParser::new().parse(parse_input) {
                     Ok(result) => println!("✓ Valid: {:?}", result),
                     Err(e) => eprintln!("✗ Parse error: {}", e),
                 }
             }
             _ => {
-                eprintln!("Unknown command: {}. Use: label, simple, property, descriptor_type, descriptor, filler, or node", command);
+                eprintln!("Unknown command: {}. Use: label, simple, property, descriptor_type, descriptor, filler, node, or expr", command);
             }
         }
     }
