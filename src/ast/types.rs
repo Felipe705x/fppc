@@ -58,6 +58,12 @@ pub enum PropertyType {
     Closed(HashMap<String, SimpleType>),
 }
 
+impl Default for PropertyType {
+    fn default() -> Self {
+        PropertyType::Open(HashMap::new())
+    }
+}
+
 impl fmt::Debug for PropertyType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {

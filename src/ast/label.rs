@@ -9,6 +9,16 @@ pub enum LabelType {
     Or(Box<LabelType>, Box<LabelType>),  // e.g. Teacher | Student
 }
 
+impl LabelType {
+    pub fn new_and(l1: LabelType, l2: LabelType) -> Self {
+        LabelType::And(Box::new(l1), Box::new(l2))
+    }
+
+    pub fn new_or(l1: LabelType, l2: LabelType) -> Self {
+        LabelType::Or(Box::new(l1), Box::new(l2))
+    }
+}
+
 impl fmt::Debug for LabelType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {

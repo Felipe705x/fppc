@@ -1,10 +1,10 @@
 
 pub LabelType: LabelType = {
     #[precedence(level="2")] #[assoc(side="left")]
-    <l:LabelType> "|" <r:LabelType> => LabelType::Or(Box::new(l), Box::new(r)),
+    <l:LabelType> "|" <r:LabelType> => LabelType::new_or(l, r),
     
     #[precedence(level="1")] #[assoc(side="left")]
-    <l:LabelType> "&" <r:LabelType> => LabelType::And(Box::new(l), Box::new(r)),
+    <l:LabelType> "&" <r:LabelType> => LabelType::new_and(l, r),
     
     #[precedence(level="0")]
     "*" => LabelType::Star,

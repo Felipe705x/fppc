@@ -8,6 +8,15 @@ pub struct DescriptorType {
     pub properties: PropertyType,
 }
 
+impl Default for DescriptorType {
+    fn default() -> Self {
+        DescriptorType {
+            label: LabelType::Star,
+            properties: PropertyType::default(),
+        }
+    }
+}
+
 // Debug (__repr__ equivalent) - developer representation
 impl fmt::Debug for DescriptorType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
