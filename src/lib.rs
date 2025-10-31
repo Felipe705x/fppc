@@ -23,11 +23,11 @@ mod tests {
     fn test_node_empty() {
         // () -> NodePattern(Descriptor(None, DescriptorType.star()))
         let result = PathPatternParser::new().parse("()").unwrap();
-        let node = match result {
-            ast::PathPattern::Node(n) => n,
+        let desc = match result {
+            ast::PathPattern::Node(ref d) => d,
             _ => panic!("Expected PathPattern::Node"),
         };
-        let desc = &node.descriptor;
+        
         assert_eq!(desc.variable, None);
         assert_eq!(desc.descriptor_type.label, LabelType::Star);
         assert!(matches!(desc.descriptor_type.properties, PropertyType::Open(_)));
@@ -37,11 +37,11 @@ mod tests {
     fn test_node_variable() {
         // (x) -> NodePattern(Descriptor(Var("x"), DescriptorType.star()))
         let result = PathPatternParser::new().parse("(x)").unwrap();
-        let node = match result {
-            ast::PathPattern::Node(n) => n,
+        let desc = match result {
+            ast::PathPattern::Node(ref d) => d,
             _ => panic!("Expected PathPattern::Node"),
         };
-        let desc = &node.descriptor;
+        
         assert_eq!(desc.variable, Some(Var("x".to_string())));
         assert_eq!(desc.descriptor_type.label, LabelType::Star);
     }
@@ -50,11 +50,11 @@ mod tests {
     fn test_descriptor() {
         // (x:Person) -> NodePattern(Descriptor(Var("x"), DescriptorType(Label("Person"), OpenPropertyType())))
         let result = PathPatternParser::new().parse("(x:Person)").unwrap();
-        let node = match result {
-            ast::PathPattern::Node(n) => n,
+        let desc = match result {
+            ast::PathPattern::Node(ref d) => d,
             _ => panic!("Expected PathPattern::Node"),
         };
-        let desc = &node.descriptor;
+        
         assert_eq!(desc.variable, Some(Var("x".to_string())));
         assert!(matches!(&desc.descriptor_type.label, LabelType::Label(s) if s == "Person"));
         match &desc.descriptor_type.properties {
@@ -67,11 +67,11 @@ mod tests {
     fn test_descriptor_empty_record() {
         // (x:Person {}) -> NodePattern(Descriptor(Var("x"), DescriptorType(Label("Person"), OpenPropertyType())))
         let result = PathPatternParser::new().parse("(x:Person {})").unwrap();
-        let node = match result {
-            ast::PathPattern::Node(n) => n,
+        let desc = match result {
+            ast::PathPattern::Node(ref d) => d,
             _ => panic!("Expected PathPattern::Node"),
         };
-        let desc = &node.descriptor;
+        
         assert_eq!(desc.variable, Some(Var("x".to_string())));
         assert!(matches!(&desc.descriptor_type.label, LabelType::Label(s) if s == "Person"));
         match &desc.descriptor_type.properties {
@@ -84,11 +84,11 @@ mod tests {
     fn test_descriptor_record() {
         // (x :Person {a: int})
         let result = PathPatternParser::new().parse("(x :Person {a: int})").unwrap();
-        let node = match result {
-            ast::PathPattern::Node(n) => n,
+        let desc = match result {
+            ast::PathPattern::Node(ref d) => d,
             _ => panic!("Expected PathPattern::Node"),
         };
-        let desc = &node.descriptor;
+        
         assert_eq!(desc.variable, Some(Var("x".to_string())));
         assert!(matches!(&desc.descriptor_type.label, LabelType::Label(s) if s == "Person"));
         match &desc.descriptor_type.properties {
@@ -104,11 +104,11 @@ mod tests {
     fn test_descriptor_record_multiple() {
         // (:Person {a: int, b: bool})
         let result = PathPatternParser::new().parse("(:Person {a: int, b: bool})").unwrap();
-        let node = match result {
-            ast::PathPattern::Node(n) => n,
+        let desc = match result {
+            ast::PathPattern::Node(ref d) => d,
             _ => panic!("Expected PathPattern::Node"),
         };
-        let desc = &node.descriptor;
+        
         assert_eq!(desc.variable, None);
         assert!(matches!(&desc.descriptor_type.label, LabelType::Label(s) if s == "Person"));
         match &desc.descriptor_type.properties {
@@ -125,11 +125,11 @@ mod tests {
     fn test_descriptor_no_label() {
         // (:{a: int, b: bool}) -> DescriptorType(StarLabel(), OpenPropertyType(...))
         let result = PathPatternParser::new().parse("(:{a: int, b: bool})").unwrap();
-        let node = match result {
-            ast::PathPattern::Node(n) => n,
+        let desc = match result {
+            ast::PathPattern::Node(ref d) => d,
             _ => panic!("Expected PathPattern::Node"),
         };
-        let desc = &node.descriptor;
+        
         assert_eq!(desc.variable, None);
         assert!(matches!(desc.descriptor_type.label, LabelType::Star));
         match &desc.descriptor_type.properties {
@@ -146,11 +146,11 @@ mod tests {
     fn test_descriptor_record_closed() {
         // (x :Person {{a: int}}) -> ClosedPropertyType
         let result = PathPatternParser::new().parse("(x :Person {{a: int}})").unwrap();
-        let node = match result {
-            ast::PathPattern::Node(n) => n,
+        let desc = match result {
+            ast::PathPattern::Node(ref d) => d,
             _ => panic!("Expected PathPattern::Node"),
         };
-        let desc = &node.descriptor;
+        
         assert_eq!(desc.variable, Some(Var("x".to_string())));
         assert!(matches!(&desc.descriptor_type.label, LabelType::Label(s) if s == "Person"));
         match &desc.descriptor_type.properties {
@@ -166,11 +166,11 @@ mod tests {
     fn test_label_and() {
         // (:Person & Company) -> NodePattern(Descriptor(None, DescriptorType(AndLabel(Label("Person"), Label("Company")), OpenPropertyType())))
         let result = PathPatternParser::new().parse("(:Person & Company)").unwrap();
-        let node = match result {
-            ast::PathPattern::Node(n) => n,
+        let desc = match result {
+            ast::PathPattern::Node(ref d) => d,
             _ => panic!("Expected PathPattern::Node"),
         };
-        let desc = &node.descriptor;
+        
         match &desc.descriptor_type.label {
             LabelType::And(l1, l2) => {
                 assert_eq!(**l1, LabelType::Label("Person".to_string()));

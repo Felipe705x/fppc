@@ -1,4 +1,4 @@
-use crate::ast::{Var, LabelType, SimpleType, BaseType, PropertyType, DescriptorType, Descriptor, NodePattern, PathPattern, Expr, Constant, AttributeLookup, Binop, Unop, BinOpKind, UnOpKind};
+use crate::ast::{Var, LabelType, SimpleType, BaseType, PropertyType, DescriptorType, Descriptor, PathPattern, Expr, Constant, AttributeLookup, Binop, Unop, BinOpKind, UnOpKind};
 use std::collections::HashMap;
 
 grammar;
