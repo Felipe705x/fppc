@@ -22,10 +22,10 @@ impl LabelType {
 impl fmt::Debug for LabelType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            LabelType::Label(s) => write!(f, "{}", s),
-            LabelType::Star => write!(f, "*"),
-            LabelType::And(l1, l2) => write!(f, "({:?} & {:?})", l1, l2),
-            LabelType::Or(l1, l2) => write!(f, "({:?} | {:?})", l1, l2),
+            LabelType::Label(s) => write!(f, "Label({})", s),
+            LabelType::Star => write!(f, "Star"),
+            LabelType::And(l1, l2) => write!(f, "And({:?}, {:?})", l1, l2),
+            LabelType::Or(l1, l2) => write!(f, "Or({:?}, {:?})", l1, l2),
         }
     }
 }

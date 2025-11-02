@@ -20,8 +20,8 @@ impl PathPattern {
 impl fmt::Debug for PathPattern {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            PathPattern::Node(desc) => write!(f, "({:?})", desc),
-            PathPattern::Filter(p, e) => write!(f, "({:?} WHERE {:?})", p, e),
+            PathPattern::Node(desc) => write!(f, "Node({:?})", desc),
+            PathPattern::Filter(p, e) => write!(f, "Filter({:?}, {:?})", p, e),
         }
     }
 }
