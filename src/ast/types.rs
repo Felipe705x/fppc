@@ -52,7 +52,7 @@ impl fmt::Display for SimpleType {
     }
 }
 
-#[derive(Clone)]
+#[derive(PartialEq, Clone)]
 pub enum PropertyType {
     Open(HashMap<String, SimpleType>),
     Closed(HashMap<String, SimpleType>),

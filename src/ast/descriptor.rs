@@ -3,6 +3,7 @@ use super::label::LabelType;
 use super::types::PropertyType;
 use super::var::Var;
 
+#[derive(PartialEq, Clone)]
 pub struct DescriptorType {
     pub label: LabelType,
     pub properties: PropertyType,
@@ -23,6 +24,7 @@ impl fmt::Debug for DescriptorType {
     }
 }
 
+#[derive(PartialEq, Clone)]
 pub struct Descriptor {
     pub variable: Option<Var>,
     pub descriptor_type: DescriptorType, // Always present, defaults to Star {}

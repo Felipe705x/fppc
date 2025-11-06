@@ -2,6 +2,7 @@ use std::fmt;
 use super::descriptor::Descriptor;
 use super::expr::Expr;
 
+#[derive(PartialEq, Clone)]
 pub enum PathPattern {
     Node(Descriptor),
     Filter(Box<PathPattern>, Expr),
