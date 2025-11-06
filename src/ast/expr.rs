@@ -7,7 +7,6 @@ use std::fmt;
 #[derive(PartialEq, Clone)]
 pub enum Expr {
     Constant(Constant),
-    Variable(Var),
     TypeLiteral(SimpleType),
     AttributeLookup(AttributeLookup),
     Binop(Binop),
@@ -18,7 +17,6 @@ impl fmt::Debug for Expr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Expr::Constant(c) => write!(f, "Constant({:?})", c),
-            Expr::Variable(v) => write!(f, "Variable({:?})", v),
             Expr::TypeLiteral(t) => write!(f, "TypeLiteral({:?})", t),
             Expr::AttributeLookup(a) => write!(f, "AttributeLookup({:?})", a),
             Expr::Binop(b) => write!(f, "Binop({:?})", b),
@@ -233,7 +231,6 @@ impl fmt::Display for Expr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Expr::Constant(c) => write!(f, "{}", c),
-            Expr::Variable(v) => write!(f, "{}", v.0),
             Expr::TypeLiteral(t) => write!(f, "{}", t),
             Expr::AttributeLookup(a) => write!(f, "{}", a),
             Expr::Binop(b) => write!(f, "{}", b),

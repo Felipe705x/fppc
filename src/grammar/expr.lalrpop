@@ -38,7 +38,6 @@ ExprPrimary: Expr = {
     <ExprConstant> => Expr::Constant(<>),
     <v:Name> "." <a:Name> => Expr::AttributeLookup(AttributeLookup::new(Var(v), Var(a))),
     <SimpleType> => Expr::TypeLiteral(<>),
-    <Name> => Expr::Variable(Var(<>)),
     "(" <Expr> ")",
 };
 
