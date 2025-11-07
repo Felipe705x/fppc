@@ -1,15 +1,14 @@
-mod var;
-mod label;
-mod types;
 mod descriptor;
-mod pattern;
 mod expr;
+mod label;
+mod pattern;
+mod types;
+mod var;
 
 // Re-export everything
-pub use var::Var;
+pub use descriptor::{Descriptor, DescriptorType};
+pub use expr::{AttributeLookup, BinOpKind, Binop, Constant, Expr, UnOpKind, Unop};
 pub use label::LabelType;
-pub use types::{BaseType, SimpleType, PropertyType};
-pub use descriptor::{DescriptorType, Descriptor};
 pub use pattern::PathPattern;
-pub use expr::{Expr, Constant, AttributeLookup, Binop, Unop, BinOpKind, UnOpKind};
-
+pub use types::{BaseType, PropertyType, SimpleType};
+pub use var::Var;

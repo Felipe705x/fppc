@@ -21,7 +21,7 @@ impl Expr {
     pub fn unop(kind: UnOpKind, expr: Expr) -> Self {
         Expr::Unop(Unop::new(kind, expr))
     }
- 
+
     pub fn attr_lookup(e: Var, a: Var) -> Self {
         Expr::AttributeLookup(AttributeLookup::new(e, a))
     }
@@ -83,7 +83,6 @@ impl fmt::Debug for Constant {
         }
     }
 }
-
 
 /// Expression of the form `e.a` that accesses the attribute `a` of the entity `e`.
 #[derive(PartialEq, Clone)]

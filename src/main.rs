@@ -44,52 +44,40 @@ fn main() {
         let parse_input = parts[1];
 
         match command {
-            "label" => {
-                match LabelTypeParser::new().parse(parse_input) {
-                    Ok(result) => println!("✓ Valid: {:?}", result),
-                    Err(e) => eprintln!("✗ Parse error: {}", e),
-                }
-            }
-            "simple" => {
-                match SimpleTypeParser::new().parse(parse_input) {
-                    Ok(result) => println!("✓ Valid: {:?}", result),
-                    Err(e) => eprintln!("✗ Parse error: {}", e),
-                }
-            }
-            "property" => {
-                match PropertyTypeParser::new().parse(parse_input) {
-                    Ok(result) => println!("✓ Valid: {:?}", result),
-                    Err(e) => eprintln!("✗ Parse error: {}", e),
-                }
-            }
-            "descriptor_type" => {
-                match DescriptorTypeParser::new().parse(parse_input) {
-                    Ok(result) => println!("✓ Valid: {:?}", result),
-                    Err(e) => eprintln!("✗ Parse error: {}", e),
-                }
-            }
-            "descriptor" => {
-                match DescriptorParser::new().parse(parse_input) {
-                    Ok(result) => println!("✓ Valid: {:?}", result),
-                    Err(e) => eprintln!("✗ Parse error: {}", e),
-                }
-            }
-            "path" => {
-                match PathPatternParser::new().parse(parse_input) {
-                    Ok(result) => println!("✓ Valid: {:?}", result),
-                    Err(e) => eprintln!("✗ Parse error: {}", e),
-                }
-            }
-            "expr" => {
-                match ExprParser::new().parse(parse_input) {
-                    Ok(result) => println!("✓ Valid: {:?}", result),
-                    Err(e) => eprintln!("✗ Parse error: {}", e),
-                }
-            }
+            "label" => match LabelTypeParser::new().parse(parse_input) {
+                Ok(result) => println!("✓ Valid: {:?}", result),
+                Err(e) => eprintln!("✗ Parse error: {}", e),
+            },
+            "simple" => match SimpleTypeParser::new().parse(parse_input) {
+                Ok(result) => println!("✓ Valid: {:?}", result),
+                Err(e) => eprintln!("✗ Parse error: {}", e),
+            },
+            "property" => match PropertyTypeParser::new().parse(parse_input) {
+                Ok(result) => println!("✓ Valid: {:?}", result),
+                Err(e) => eprintln!("✗ Parse error: {}", e),
+            },
+            "descriptor_type" => match DescriptorTypeParser::new().parse(parse_input) {
+                Ok(result) => println!("✓ Valid: {:?}", result),
+                Err(e) => eprintln!("✗ Parse error: {}", e),
+            },
+            "descriptor" => match DescriptorParser::new().parse(parse_input) {
+                Ok(result) => println!("✓ Valid: {:?}", result),
+                Err(e) => eprintln!("✗ Parse error: {}", e),
+            },
+            "path" => match PathPatternParser::new().parse(parse_input) {
+                Ok(result) => println!("✓ Valid: {:?}", result),
+                Err(e) => eprintln!("✗ Parse error: {}", e),
+            },
+            "expr" => match ExprParser::new().parse(parse_input) {
+                Ok(result) => println!("✓ Valid: {:?}", result),
+                Err(e) => eprintln!("✗ Parse error: {}", e),
+            },
             _ => {
-                eprintln!("Unknown command: {}. Use: label, simple, property, descriptor_type, descriptor, filler, node, or expr", command);
+                eprintln!(
+                    "Unknown command: {}. Use: label, simple, property, descriptor_type, descriptor, filler, node, or expr",
+                    command
+                );
             }
         }
     }
 }
-
