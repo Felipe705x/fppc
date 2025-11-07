@@ -29,7 +29,7 @@ mod tests {
             variable: None,
             descriptor_type: DescriptorType {
                 label: LabelType::Star,
-                properties: PropertyType::Open(HashMap::new()),
+                properties: PropertyType::open(),
             },
         });
         assert_eq!(result, expected);
@@ -42,7 +42,7 @@ mod tests {
             variable: Some(Var("x".to_string())),
             descriptor_type: DescriptorType {
                 label: LabelType::Star,
-                properties: PropertyType::Open(HashMap::new()),
+                properties: PropertyType::open(),
             },
         });
         assert_eq!(result, expected);
@@ -55,7 +55,7 @@ mod tests {
             variable: Some(Var("x".to_string())),
             descriptor_type: DescriptorType {
                 label: LabelType::Label("Person".to_string()),
-                properties: PropertyType::Open(HashMap::new()),
+                properties: PropertyType::open(),
             },
         });
         assert_eq!(result, expected);
@@ -68,7 +68,7 @@ mod tests {
             variable: Some(Var("x".to_string())),
             descriptor_type: DescriptorType {
                 label: LabelType::Label("Person".to_string()),
-                properties: PropertyType::Open(HashMap::new()),
+                properties: PropertyType::open(),
             },
         });
         assert_eq!(result, expected);
@@ -156,7 +156,7 @@ mod tests {
                     Box::new(LabelType::Label("Person".to_string())),
                     Box::new(LabelType::Label("Company".to_string())),
                 ),
-                properties: PropertyType::Open(HashMap::new()),
+                properties: PropertyType::open(),
             },
         });
         assert_eq!(result, expected);
@@ -174,7 +174,7 @@ mod tests {
                 variable: Some(Var("x".to_string())),
                 descriptor_type: DescriptorType {
                     label: LabelType::Star,
-                    properties: PropertyType::Open(HashMap::new()),
+                    properties: PropertyType::open(),
                 },
             })),
             Expr::Binop(Binop::new(
@@ -199,7 +199,7 @@ mod tests {
                 variable: Some(Var("x".to_string())),
                 descriptor_type: DescriptorType {
                     label: LabelType::Star,
-                    properties: PropertyType::Open(HashMap::new()),
+                    properties: PropertyType::open(),
                 },
             })),
             Expr::Binop(Binop::new(
@@ -237,7 +237,7 @@ mod tests {
                 variable: Some(Var("x".to_string())),
                 descriptor_type: DescriptorType {
                     label: LabelType::Star,
-                    properties: PropertyType::Open(HashMap::new()),
+                    properties: PropertyType::open(),
                 },
             })),
             Expr::Binop(Binop::new(
@@ -275,7 +275,7 @@ mod tests {
                 variable: Some(Var("x".to_string())),
                 descriptor_type: DescriptorType {
                     label: LabelType::Star,
-                    properties: PropertyType::Open(HashMap::new()),
+                    properties: PropertyType::open(),
                 },
             })),
             Expr::Binop(Binop::new(
@@ -301,7 +301,7 @@ mod tests {
                 variable: Some(Var("x".to_string())),
                 descriptor_type: DescriptorType {
                     label: LabelType::Star,
-                    properties: PropertyType::Open(HashMap::new()),
+                    properties: PropertyType::open(),
                 },
             })),
             Expr::Binop(Binop::new(
@@ -333,7 +333,7 @@ mod tests {
                 variable: Some(Var("x".to_string())),
                 descriptor_type: DescriptorType {
                     label: LabelType::Star,
-                    properties: PropertyType::Open(HashMap::new()),
+                    properties: PropertyType::open(),
                 },
             })),
             Expr::Unop(Unop::new(
@@ -357,7 +357,7 @@ mod tests {
                 variable: Some(Var("x".to_string())),
                 descriptor_type: DescriptorType {
                     label: LabelType::Star,
-                    properties: PropertyType::Open(HashMap::new()),
+                    properties: PropertyType::open(),
                 },
             })),
             Expr::Binop(Binop::new(

@@ -11,9 +11,9 @@ BaseType: BaseType = {
 };
 
 pub PropertyType: PropertyType = {
-    "{" "}" => PropertyType::default(),
+    "{" "}" => PropertyType::open(),
     "{" <RecordElements> "}" => PropertyType::Open(<>),
-    "{{" "}}" => PropertyType::Closed(HashMap::new()),
+    "{{" "}}" => PropertyType::closed(),
     "{{" <RecordElements> "}}" => PropertyType::Closed(<>),
 };
 

@@ -1,12 +1,12 @@
 use std::fmt;
 
-
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Default)]
 pub enum LabelType {
-    Label(String),                       // e.g. Person
-    Star,                                // *
-    And(Box<LabelType>, Box<LabelType>), // e.g. Teacher & Student
-    Or(Box<LabelType>, Box<LabelType>),  // e.g. Teacher | Student
+    Label(String),
+    #[default]
+    Star,
+    And(Box<LabelType>, Box<LabelType>),
+    Or(Box<LabelType>, Box<LabelType>),
 }
 
 impl LabelType {
@@ -29,4 +29,3 @@ impl fmt::Debug for LabelType {
         }
     }
 }
-

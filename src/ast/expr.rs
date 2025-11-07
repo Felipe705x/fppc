@@ -13,6 +13,20 @@ pub enum Expr {
     Unop(Unop),
 }
 
+impl Expr {
+    pub fn binop(kind: BinOpKind, left: Expr, right: Expr) -> Self {
+        Expr::Binop(Binop::new(kind, left, right))
+    }
+
+    pub fn unop(kind: UnOpKind, expr: Expr) -> Self {
+        Expr::Unop(Unop::new(kind, expr))
+    }
+ 
+    pub fn attr_lookup(e: Var, a: Var) -> Self {
+        Expr::AttributeLookup(AttributeLookup::new(e, a))
+    }
+}
+
 impl fmt::Debug for Expr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -34,6 +48,30 @@ pub enum Constant {
     Int(i64),
     /// A constant boolean value
     Bool(bool),
+}
+
+impl From<String> for Constant {
+    fn from(s: String) -> Self {
+        Constant::String(s)
+    }
+}
+
+impl From<&str> for Constant {
+    fn from(s: &str) -> Self {
+        Constant::String(s.to_string())
+    }
+}
+
+impl From<i64> for Constant {
+    fn from(i: i64) -> Self {
+        Constant::Int(i)
+    }
+}
+
+impl From<bool> for Constant {
+    fn from(b: bool) -> Self {
+        Constant::Bool(b)
+    }
 }
 
 impl fmt::Debug for Constant {

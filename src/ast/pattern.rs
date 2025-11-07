@@ -1,6 +1,6 @@
-use std::fmt;
 use super::descriptor::Descriptor;
 use super::expr::Expr;
+use std::fmt;
 
 #[derive(PartialEq, Clone)]
 pub enum PathPattern {
@@ -9,12 +9,14 @@ pub enum PathPattern {
 }
 
 impl PathPattern {
-    pub fn new_node(descriptor: Descriptor) -> Self {
-        PathPattern::Node(descriptor)
-    }
-
     pub fn new_filter(pattern: PathPattern, expr: Expr) -> Self {
         PathPattern::Filter(Box::new(pattern), expr)
+    }
+}
+
+impl From<Descriptor> for PathPattern {
+    fn from(descriptor: Descriptor) -> Self {
+        PathPattern::Node(descriptor)
     }
 }
 

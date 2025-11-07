@@ -58,9 +58,19 @@ pub enum PropertyType {
     Closed(HashMap<String, SimpleType>),
 }
 
+impl PropertyType {
+    pub fn open() -> Self {
+        PropertyType::Open(HashMap::new())
+    }
+
+    pub fn closed() -> Self {
+        PropertyType::Closed(HashMap::new())
+    }
+}
+
 impl Default for PropertyType {
     fn default() -> Self {
-        PropertyType::Open(HashMap::new())
+        Self::open()
     }
 }
 
@@ -102,4 +112,3 @@ impl fmt::Debug for PropertyType {
         }
     }
 }
-

@@ -12,8 +12,8 @@ WHERE: () = { "where", "WHERE" };
 pub PathPattern: PathPattern = {
     "(" <filler:ElementPatternFiller> ")" => {
         match filler {
-            (desc, None) => PathPattern::new_node(desc),
-            (desc, Some(expr)) => PathPattern::new_filter(PathPattern::new_node(desc), expr),
+            (desc, None) => desc.into(),
+            (desc, Some(expr)) => PathPattern::new_filter(desc.into(), expr),
         }
     },
 };

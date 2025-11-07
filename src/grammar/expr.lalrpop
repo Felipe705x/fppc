@@ -1,28 +1,28 @@
 pub Expr: Expr = {
     #[precedence(level="5")] #[assoc(side="left")]
-    <l:Expr> AND <r:Expr> => Expr::Binop(Binop::new(BinOpKind::And, l, r)),
-    <l:Expr> OR <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Or, l, r)),
+    <l:Expr> AND <r:Expr> => Expr::binop(BinOpKind::And, l, r),
+    <l:Expr> OR <r:Expr> => Expr::binop(BinOpKind::Or, l, r),
     
     #[precedence(level="4")] #[assoc(side="left")]
-    <l:Expr> "<" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Lt, l, r)),
-    <l:Expr> ">" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Gt, l, r)),
-    <l:Expr> "<=" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Le, l, r)),
-    <l:Expr> ">=" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Ge, l, r)),
-    <l:Expr> "=" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Eq, l, r)),
-    <l:Expr> IS <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Is, l, r)),
-    <l:Expr> AS <r:Expr> => Expr::Binop(Binop::new(BinOpKind::As, l, r)),
+    <l:Expr> "<" <r:Expr> => Expr::binop(BinOpKind::Lt, l, r),
+    <l:Expr> ">" <r:Expr> => Expr::binop(BinOpKind::Gt, l, r),
+    <l:Expr> "<=" <r:Expr> => Expr::binop(BinOpKind::Le, l, r),
+    <l:Expr> ">=" <r:Expr> => Expr::binop(BinOpKind::Ge, l, r),
+    <l:Expr> "=" <r:Expr> => Expr::binop(BinOpKind::Eq, l, r),
+    <l:Expr> IS <r:Expr> => Expr::binop(BinOpKind::Is, l, r),
+    <l:Expr> AS <r:Expr> => Expr::binop(BinOpKind::As, l, r),
     
     #[precedence(level="3")] #[assoc(side="left")]
-    <l:Expr> "+" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Add, l, r)),
-    <l:Expr> "-" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Sub, l, r)),
+    <l:Expr> "+" <r:Expr> => Expr::binop(BinOpKind::Add, l, r),
+    <l:Expr> "-" <r:Expr> => Expr::binop(BinOpKind::Sub, l, r),
     
     #[precedence(level="2")] #[assoc(side="left")]
-    <l:Expr> "*" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Mul, l, r)),
-    <l:Expr> "/" <r:Expr> => Expr::Binop(Binop::new(BinOpKind::Div, l, r)),
+    <l:Expr> "*" <r:Expr> => Expr::binop(BinOpKind::Mul, l, r),
+    <l:Expr> "/" <r:Expr> => Expr::binop(BinOpKind::Div, l, r),
     
     #[precedence(level="1")]
-    NOT <e:Expr> => Expr::Unop(Unop::new(UnOpKind::Not, e)),
-    "-" <e:Expr> => Expr::Unop(Unop::new(UnOpKind::Neg, e)),
+    NOT <e:Expr> => Expr::unop(UnOpKind::Not, e),
+    "-" <e:Expr> => Expr::unop(UnOpKind::Neg, e),
     
     #[precedence(level="0")]
     <ExprPrimary>,
@@ -36,15 +36,15 @@ AS: () = { "as", "AS" };
 
 ExprPrimary: Expr = {
     <ExprConstant> => Expr::Constant(<>),
-    <v:Name> "." <a:Name> => Expr::AttributeLookup(AttributeLookup::new(Var(v), Var(a))),
+    <v:Name> "." <a:Name> => Expr::attr_lookup(v.into(), a.into()),
     <SimpleType> => Expr::TypeLiteral(<>),
     "(" <Expr> ")",
 };
 
 ExprConstant: Constant = {
-    <Number> => Constant::Int(<>),
-    <Boolean> => Constant::Bool(<>),
-    <String> => Constant::String(<>),
+    <Number> => <>.into(),
+    <Boolean> => <>.into(),
+    <String> => <>.into(),
 };
 
 Number: i64 = r"\d+" => <>.parse().unwrap();
