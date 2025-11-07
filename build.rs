@@ -11,7 +11,7 @@ fn main() {
     let grammar_path = format!("{}/grammar.lalrpop", out_dir);
     let mut outfile = fs::File::create(&grammar_path).unwrap();
     write!(outfile, "{}", grammar).unwrap();
-    
+
     // Process the grammar file
     lalrpop::Configuration::new()
         .process_file(&grammar_path)
