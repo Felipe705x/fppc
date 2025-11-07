@@ -3,7 +3,7 @@ use super::var::Var;
 use std::fmt;
 
 /// Base enum for all expressions in the query language.
-/// Expressions are used in filters (e.g., WHERE clauses).
+/// Expressions are used in filters (e.g., `WHERE` clauses).
 #[derive(PartialEq, Clone)]
 pub enum Expr {
     Constant(Constant),
@@ -27,6 +27,18 @@ impl Expr {
     }
 }
 
+impl fmt::Display for Expr {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Expr::Constant(c) => write!(f, "{}", c),
+            Expr::TypeLiteral(t) => write!(f, "{}", t),
+            Expr::AttributeLookup(a) => write!(f, "{}", a),
+            Expr::Binop(b) => write!(f, "{}", b),
+            Expr::Unop(u) => write!(f, "{}", u),
+        }
+    }
+}
+
 impl fmt::Debug for Expr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -36,6 +48,61 @@ impl fmt::Debug for Expr {
             Expr::Binop(b) => write!(f, "Binop({:?})", b),
             Expr::Unop(u) => write!(f, "Unop({:?})", u),
         }
+    }
+}
+
+/// Binary operation expression, e.g., `x.age + 9`, `x.running IS bool`
+#[derive(PartialEq, Clone)]
+pub struct Binop {
+    pub op: BinOpKind,
+    pub e1: Box<Expr>,
+    pub e2: Box<Expr>,
+}
+
+impl Binop {
+    pub fn new(op: BinOpKind, e1: Expr, e2: Expr) -> Self {
+        Binop {
+            op,
+            e1: Box::new(e1),
+            e2: Box::new(e2),
+        }
+    }
+}
+
+impl fmt::Display for Binop {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({} {} {})", self.e1, self.op, self.e2)
+    }
+}
+
+impl fmt::Debug for Binop {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Binop({:?}, {:?}, {:?})", self.op, self.e1, self.e2)
+    }
+}
+
+/// Unary operation expression, e.g., `-x.age`, `NOT x.running`.
+#[derive(PartialEq, Clone)]
+pub struct Unop {
+    pub op: UnOpKind,
+    pub e: Box<Expr>,
+}
+
+impl Unop {
+    pub fn new(op: UnOpKind, e: Expr) -> Self {
+        Unop { op, e: Box::new(e) }
+    }
+}
+
+impl fmt::Display for Unop {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} {}", self.op, self.e)
+    }
+}
+
+impl fmt::Debug for Unop {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Unop({:?}, {:?})", self.op, self.e)
     }
 }
 
@@ -74,6 +141,16 @@ impl From<bool> for Constant {
     }
 }
 
+impl fmt::Display for Constant {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Constant::String(s) => write!(f, "{}", s),
+            Constant::Int(i) => write!(f, "{}", i),
+            Constant::Bool(b) => write!(f, "{}", b),
+        }
+    }
+}
+
 impl fmt::Debug for Constant {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -91,12 +168,6 @@ pub struct AttributeLookup {
     pub a: Var,
 }
 
-impl fmt::Debug for AttributeLookup {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "AttributeLookup({:?}, {:?})", self.e, self.a)
-    }
-}
-
 impl AttributeLookup {
     pub fn new(e: Var, a: Var) -> Self {
         AttributeLookup { e, a }
@@ -106,6 +177,12 @@ impl AttributeLookup {
 impl fmt::Display for AttributeLookup {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}.{}", self.e.0, self.a.0)
+    }
+}
+
+impl fmt::Debug for AttributeLookup {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "AttributeLookup({:?}, {:?})", self.e, self.a)
     }
 }
 
@@ -132,27 +209,6 @@ pub enum BinOpKind {
     As,
 }
 
-impl fmt::Debug for BinOpKind {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            BinOpKind::Add => write!(f, "Add"),
-            BinOpKind::Sub => write!(f, "Sub"),
-            BinOpKind::Mul => write!(f, "Mul"),
-            BinOpKind::Div => write!(f, "Div"),
-            BinOpKind::Lt => write!(f, "Lt"),
-            BinOpKind::Gt => write!(f, "Gt"),
-            BinOpKind::Le => write!(f, "Le"),
-            BinOpKind::Ge => write!(f, "Ge"),
-            BinOpKind::Eq => write!(f, "Eq"),
-            BinOpKind::Ne => write!(f, "Ne"),
-            BinOpKind::And => write!(f, "And"),
-            BinOpKind::Or => write!(f, "Or"),
-            BinOpKind::Is => write!(f, "Is"),
-            BinOpKind::As => write!(f, "As"),
-        }
-    }
-}
-
 impl fmt::Display for BinOpKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -174,20 +230,32 @@ impl fmt::Display for BinOpKind {
     }
 }
 
+impl fmt::Debug for BinOpKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            BinOpKind::Add => write!(f, "Add"),
+            BinOpKind::Sub => write!(f, "Sub"),
+            BinOpKind::Mul => write!(f, "Mul"),
+            BinOpKind::Div => write!(f, "Div"),
+            BinOpKind::Lt => write!(f, "Lt"),
+            BinOpKind::Gt => write!(f, "Gt"),
+            BinOpKind::Le => write!(f, "Le"),
+            BinOpKind::Ge => write!(f, "Ge"),
+            BinOpKind::Eq => write!(f, "Eq"),
+            BinOpKind::Ne => write!(f, "Ne"),
+            BinOpKind::And => write!(f, "And"),
+            BinOpKind::Or => write!(f, "Or"),
+            BinOpKind::Is => write!(f, "Is"),
+            BinOpKind::As => write!(f, "As"),
+        }
+    }
+}
+
 /// Unary operator kinds
 #[derive(PartialEq, Clone)]
 pub enum UnOpKind {
     Neg, // -
     Not, // not
-}
-
-impl fmt::Debug for UnOpKind {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            UnOpKind::Neg => write!(f, "Neg"),
-            UnOpKind::Not => write!(f, "Not"),
-        }
-    }
 }
 
 impl fmt::Display for UnOpKind {
@@ -199,79 +267,11 @@ impl fmt::Display for UnOpKind {
     }
 }
 
-/// Binary operation expression, e.g., x + y, x = y, x < y.
-#[derive(PartialEq, Clone)]
-pub struct Binop {
-    pub op: BinOpKind,
-    pub e1: Box<Expr>,
-    pub e2: Box<Expr>,
-}
-
-impl fmt::Debug for Binop {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Binop({:?}, {:?}, {:?})", self.op, self.e1, self.e2)
-    }
-}
-
-impl Binop {
-    pub fn new(op: BinOpKind, e1: Expr, e2: Expr) -> Self {
-        Binop {
-            op,
-            e1: Box::new(e1),
-            e2: Box::new(e2),
-        }
-    }
-}
-
-impl fmt::Display for Binop {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "({} {} {})", self.e1, self.op, self.e2)
-    }
-}
-
-/// Unary operation expression, e.g., -x, not x.
-#[derive(PartialEq, Clone)]
-pub struct Unop {
-    pub op: UnOpKind,
-    pub e: Box<Expr>,
-}
-
-impl fmt::Debug for Unop {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Unop({:?}, {:?})", self.op, self.e)
-    }
-}
-
-impl Unop {
-    pub fn new(op: UnOpKind, e: Expr) -> Self {
-        Unop { op, e: Box::new(e) }
-    }
-}
-
-impl fmt::Display for Unop {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} {}", self.op, self.e)
-    }
-}
-
-impl fmt::Display for Constant {
+impl fmt::Debug for UnOpKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Constant::String(s) => write!(f, "{}", s),
-            Constant::Int(i) => write!(f, "{}", i),
-            Constant::Bool(b) => write!(f, "{}", b),
-        }
-    }
-}
-
-impl fmt::Display for Expr {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Expr::Constant(c) => write!(f, "{}", c),
-            Expr::TypeLiteral(t) => write!(f, "{}", t),
-            Expr::AttributeLookup(a) => write!(f, "{}", a),
-            Expr::Binop(b) => write!(f, "{}", b),
-            Expr::Unop(u) => write!(f, "{}", u),
+            UnOpKind::Neg => write!(f, "Neg"),
+            UnOpKind::Not => write!(f, "Not"),
         }
     }
 }
