@@ -9,7 +9,7 @@ pub enum PathPattern {
 }
 
 impl PathPattern {
-    pub fn new_filter(pattern: PathPattern, expr: Expr) -> Self {
+    pub fn filter(pattern: PathPattern, expr: Expr) -> Self {
         PathPattern::Filter(Box::new(pattern), expr)
     }
 }

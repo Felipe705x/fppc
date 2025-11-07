@@ -2,7 +2,7 @@ pub PathPattern: PathPattern = {
     "(" <filler:ElementPatternFiller> ")" => {
         match filler {
             (desc, None) => desc.into(),
-            (desc, Some(expr)) => PathPattern::new_filter(desc.into(), expr),
+            (desc, Some(expr)) => PathPattern::filter(desc.into(), expr),
         }
     },
 };

@@ -10,11 +10,11 @@ pub enum LabelType {
 }
 
 impl LabelType {
-    pub fn new_and(l1: LabelType, l2: LabelType) -> Self {
+    pub fn and(l1: LabelType, l2: LabelType) -> Self {
         LabelType::And(Box::new(l1), Box::new(l2))
     }
 
-    pub fn new_or(l1: LabelType, l2: LabelType) -> Self {
+    pub fn or(l1: LabelType, l2: LabelType) -> Self {
         LabelType::Or(Box::new(l1), Box::new(l2))
     }
 }
