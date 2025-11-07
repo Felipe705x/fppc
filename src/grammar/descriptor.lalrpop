@@ -1,12 +1,35 @@
-pub Descriptor: Descriptor = {
-    <var:Name> ":" <ty:DescriptorType> => Descriptor::new(var.into(), ty),
-    ":" <ty:DescriptorType> => Descriptor::with_type(ty),
-    <var:Name> => Descriptor::with_variable(var.into()),
-    => Descriptor::default(),
+pub PropertyType: PropertyType = {
+    "{" "}" => PropertyType::open(),
+    "{" <RecordElements> "}" => PropertyType::Open(<>),
+    "{{" "}}" => PropertyType::closed(),
+    "{{" <RecordElements> "}}" => PropertyType::Closed(<>),
+};
+
+RecordElements: HashMap<String, SimpleType> = {
+    <elem:RecordElement> => {
+        let mut map = HashMap::new();
+        map.insert(elem.0, elem.1);
+        map
+    },
+    <mut map:RecordElements> "," <elem:RecordElement> => {
+        map.insert(elem.0, elem.1);
+        map
+    },
+};
+
+RecordElement: (String, SimpleType) = {
+    <Name> ":" <SimpleType> => (<>),
 };
 
 pub DescriptorType: DescriptorType = {
     <label:LabelType> <props:PropertyType> => DescriptorType::new(label, props),
     <label:LabelType> => DescriptorType::with_label(label),
     <props:PropertyType> => DescriptorType::with_properties(props),
+};
+
+pub Descriptor: Descriptor = {
+    <var:Name> ":" <ty:DescriptorType> => Descriptor::new(var.into(), ty),
+    ":" <ty:DescriptorType> => Descriptor::with_type(ty),
+    <var:Name> => Descriptor::with_variable(var.into()),
+    => Descriptor::default(),
 };

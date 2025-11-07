@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::fmt;
 
 #[derive(PartialEq, Clone)]
@@ -48,67 +47,6 @@ impl fmt::Display for SimpleType {
         match self {
             SimpleType::Base(b) => write!(f, "{}", b),
             SimpleType::Star => write!(f, "*"),
-        }
-    }
-}
-
-#[derive(PartialEq, Clone)]
-pub enum PropertyType {
-    Open(HashMap<String, SimpleType>),
-    Closed(HashMap<String, SimpleType>),
-}
-
-impl PropertyType {
-    pub fn open() -> Self {
-        PropertyType::Open(HashMap::new())
-    }
-
-    pub fn closed() -> Self {
-        PropertyType::Closed(HashMap::new())
-    }
-}
-
-impl Default for PropertyType {
-    fn default() -> Self {
-        Self::open()
-    }
-}
-
-impl fmt::Debug for PropertyType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            PropertyType::Open(map) => {
-                if map.is_empty() {
-                    write!(f, "Open({{}})")
-                } else {
-                    let mut keys: Vec<_> = map.keys().collect();
-                    keys.sort();
-                    write!(f, "Open({{")?;
-                    for (i, key) in keys.iter().enumerate() {
-                        if i > 0 {
-                            write!(f, ", ")?;
-                        }
-                        write!(f, "{}: {:?}", key, map[*key])?;
-                    }
-                    write!(f, "}})")
-                }
-            }
-            PropertyType::Closed(map) => {
-                if map.is_empty() {
-                    write!(f, "Closed({{}})")
-                } else {
-                    let mut keys: Vec<_> = map.keys().collect();
-                    keys.sort();
-                    write!(f, "Closed({{")?;
-                    for (i, key) in keys.iter().enumerate() {
-                        if i > 0 {
-                            write!(f, ", ")?;
-                        }
-                        write!(f, "{}: {:?}", key, map[*key])?;
-                    }
-                    write!(f, "}})")
-                }
-            }
         }
     }
 }

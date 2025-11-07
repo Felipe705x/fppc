@@ -1,10 +1,3 @@
-pub PropertyType: PropertyType = {
-    "{" "}" => PropertyType::open(),
-    "{" <RecordElements> "}" => PropertyType::Open(<>),
-    "{{" "}}" => PropertyType::closed(),
-    "{{" <RecordElements> "}}" => PropertyType::Closed(<>),
-};
-
 pub SimpleType: SimpleType = {
     <BaseType> => SimpleType::Base(<>),
     "*" => SimpleType::Star,
@@ -14,21 +7,4 @@ BaseType: BaseType = {
     "int" => BaseType::Int,
     "bool" => BaseType::Bool,
     "str" => BaseType::String,
-};
-
-
-RecordElements: HashMap<String, SimpleType> = {
-    <elem:RecordElement> => {
-        let mut map = HashMap::new();
-        map.insert(elem.0, elem.1);
-        map
-    },
-    <mut map:RecordElements> "," <elem:RecordElement> => {
-        map.insert(elem.0, elem.1);
-        map
-    },
-};
-
-RecordElement: (String, SimpleType) = {
-    <Name> ":" <SimpleType> => (<>),
 };
