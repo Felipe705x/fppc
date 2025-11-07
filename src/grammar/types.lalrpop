@@ -1,3 +1,9 @@
+pub PropertyType: PropertyType = {
+    "{" "}" => PropertyType::open(),
+    "{" <RecordElements> "}" => PropertyType::Open(<>),
+    "{{" "}}" => PropertyType::closed(),
+    "{{" <RecordElements> "}}" => PropertyType::Closed(<>),
+};
 
 pub SimpleType: SimpleType = {
     <BaseType> => SimpleType::Base(<>),
@@ -10,12 +16,6 @@ BaseType: BaseType = {
     "str" => BaseType::String,
 };
 
-pub PropertyType: PropertyType = {
-    "{" "}" => PropertyType::open(),
-    "{" <RecordElements> "}" => PropertyType::Open(<>),
-    "{{" "}}" => PropertyType::closed(),
-    "{{" <RecordElements> "}}" => PropertyType::Closed(<>),
-};
 
 RecordElements: HashMap<String, SimpleType> = {
     <elem:RecordElement> => {
@@ -32,4 +32,3 @@ RecordElements: HashMap<String, SimpleType> = {
 RecordElement: (String, SimpleType) = {
     <Name> ":" <SimpleType> => (<>),
 };
-

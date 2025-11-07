@@ -1,10 +1,3 @@
-
-pub DescriptorType: DescriptorType = {
-    <label:LabelType> <props:PropertyType> => DescriptorType::new(label, props),
-    <label:LabelType> => DescriptorType::with_label(label),
-    <props:PropertyType> => DescriptorType::with_properties(props),
-};
-
 pub Descriptor: Descriptor = {
     <var:Name> ":" <ty:DescriptorType> => Descriptor::new(var.into(), ty),
     ":" <ty:DescriptorType> => Descriptor::with_type(ty),
@@ -12,3 +5,8 @@ pub Descriptor: Descriptor = {
     => Descriptor::default(),
 };
 
+pub DescriptorType: DescriptorType = {
+    <label:LabelType> <props:PropertyType> => DescriptorType::new(label, props),
+    <label:LabelType> => DescriptorType::with_label(label),
+    <props:PropertyType> => DescriptorType::with_properties(props),
+};
