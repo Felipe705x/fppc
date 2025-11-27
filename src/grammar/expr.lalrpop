@@ -1,7 +1,9 @@
 pub Expr: Expr = {
+    #[precedence(level="6")] #[assoc(side="left")]
+    <l:Expr> OR <r:Expr> => Expr::binop(BinOpKind::Or, l, r),
+
     #[precedence(level="5")] #[assoc(side="left")]
     <l:Expr> AND <r:Expr> => Expr::binop(BinOpKind::And, l, r),
-    <l:Expr> OR <r:Expr> => Expr::binop(BinOpKind::Or, l, r),
     
     #[precedence(level="4")] #[assoc(side="left")]
     <l:Expr> "<" <r:Expr> => Expr::binop(BinOpKind::Lt, l, r),
