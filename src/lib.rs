@@ -12,7 +12,9 @@ pub use crate::grammar::{
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ast::{AttributeLookup, Binop, Descriptor, DescriptorType, PathPattern, Unop};
+    use ast::{
+        AttributeLookup, Binop, Descriptor, DescriptorType, EdgeDirection, PathPattern, Unop,
+    };
     use ast::{
         BaseType, BinOpKind, Constant, Expr, LabelType, PropertyType, SimpleType, UnOpKind, Var,
     };
@@ -163,6 +165,115 @@ mod tests {
     }
 
     // ==========================================
+    // EDGE PATTERN TESTS
+    // ==========================================
+
+    #[test]
+    fn test_edge_right_empty() {
+        let result = PathPatternParser::new().parse("->").unwrap();
+        let expected = PathPattern::edge(EdgeDirection::Right, Descriptor::default(), None);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_edge_right_empty_alt() {
+        let result = PathPatternParser::new().parse("-[]->").unwrap();
+        let expected = PathPattern::edge(EdgeDirection::Right, Descriptor::default(), None);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_edge_right_with_descriptor() {
+        let result = PathPatternParser::new()
+            .parse("-[x:Person {a: int}]->")
+            .unwrap();
+        let mut props = HashMap::new();
+        props.insert("a".to_string(), SimpleType::Base(BaseType::Int));
+        let expected = PathPattern::edge(
+            EdgeDirection::Right,
+            Descriptor {
+                variable: Some(Var("x".to_string())),
+                descriptor_type: DescriptorType {
+                    label: LabelType::Label("Person".to_string()),
+                    properties: PropertyType::Open(props),
+                },
+            },
+            None,
+        );
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_edge_left_empty() {
+        let result = PathPatternParser::new().parse("<-").unwrap();
+        let expected = PathPattern::edge(EdgeDirection::Left, Descriptor::default(), None);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_edge_left_empty_alt() {
+        let result = PathPatternParser::new().parse("<-[]-").unwrap();
+        let expected = PathPattern::edge(EdgeDirection::Left, Descriptor::default(), None);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_edge_left_with_descriptor() {
+        let result = PathPatternParser::new()
+            .parse("<-[x:Person {a: int}]-")
+            .unwrap();
+        let mut props = HashMap::new();
+        props.insert("a".to_string(), SimpleType::Base(BaseType::Int));
+        let expected = PathPattern::edge(
+            EdgeDirection::Left,
+            Descriptor {
+                variable: Some(Var("x".to_string())),
+                descriptor_type: DescriptorType {
+                    label: LabelType::Label("Person".to_string()),
+                    properties: PropertyType::Open(props),
+                },
+            },
+            None,
+        );
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_edge_non_directional_empty() {
+        let result = PathPatternParser::new().parse("~").unwrap();
+        let expected = PathPattern::edge(EdgeDirection::None, Descriptor::default(), None);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_edge_non_directional_empty_alt() {
+        let result = PathPatternParser::new().parse("~[]~").unwrap();
+        let expected = PathPattern::edge(EdgeDirection::None, Descriptor::default(), None);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_edge_non_directional_with_descriptor() {
+        let result = PathPatternParser::new()
+            .parse("~[x:Person {a: int}]~")
+            .unwrap();
+        let mut props = HashMap::new();
+        props.insert("a".to_string(), SimpleType::Base(BaseType::Int));
+        let expected = PathPattern::edge(
+            EdgeDirection::None,
+            Descriptor {
+                variable: Some(Var("x".to_string())),
+                descriptor_type: DescriptorType {
+                    label: LabelType::Label("Person".to_string()),
+                    properties: PropertyType::Open(props),
+                },
+            },
+            None,
+        );
+        assert_eq!(result, expected);
+    }
+
+    // ==========================================
     // FILTER PATTERN TESTS
     // ==========================================
 
@@ -222,6 +333,34 @@ mod tests {
                         Expr::Constant(Constant::String("1".to_string())),
                     )),
                 )),
+            )),
+        );
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_filter_on_edge() {
+        let result = PathPatternParser::new()
+            .parse("-[y where y.a>10]->")
+            .unwrap();
+        let expected = PathPattern::Filter(
+            Box::new(PathPattern::Edge(
+                EdgeDirection::Right,
+                Descriptor {
+                    variable: Some(Var("y".to_string())),
+                    descriptor_type: DescriptorType {
+                        label: LabelType::Star,
+                        properties: PropertyType::open(),
+                    },
+                },
+            )),
+            Expr::Binop(Binop::new(
+                BinOpKind::Gt,
+                Expr::AttributeLookup(AttributeLookup::new(
+                    Var("y".to_string()),
+                    Var("a".to_string()),
+                )),
+                Expr::Constant(Constant::Int(10)),
             )),
         );
         assert_eq!(result, expected);
@@ -378,7 +517,6 @@ mod tests {
     // ==========================================
     // UNIMPLEMENTED FEATURES (skipped)
     // ==========================================
-    // - Edge patterns (EdgePatternRight, EdgePatternLeft, EdgePatternUndirected)
     // - Concatenation patterns
     // - Repetition patterns (*, +, {n,m})
     // - Union patterns (|)

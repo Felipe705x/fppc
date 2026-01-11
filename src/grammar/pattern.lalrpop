@@ -1,10 +1,16 @@
 pub PathPattern: PathPattern = {
-    "(" <filler:ElementPatternFiller> ")" => {
-        match filler {
-            (desc, None) => desc.into(),
-            (desc, Some(expr)) => PathPattern::filter(desc.into(), expr),
-        }
-    },
+    // Node pattern
+    "(" <filler:ElementPatternFiller> ")" => PathPattern::node(filler.0, filler.1),
+    
+    // Edge patterns
+    "-[" <filler:ElementPatternFiller> "]->" => PathPattern::edge(EdgeDirection::Right, filler.0, filler.1),
+    "<-[" <filler:ElementPatternFiller> "]-" => PathPattern::edge(EdgeDirection::Left, filler.0, filler.1),
+    "-[" <filler:ElementPatternFiller> "]-" => PathPattern::edge(EdgeDirection::Any, filler.0, filler.1),
+    "~[" <filler:ElementPatternFiller> "]~" => PathPattern::edge(EdgeDirection::None, filler.0, filler.1),
+    "->" => PathPattern::edge(EdgeDirection::Right, Descriptor::default(), None),
+    "<-" => PathPattern::edge(EdgeDirection::Left, Descriptor::default(), None),
+    "~" => PathPattern::edge(EdgeDirection::None, Descriptor::default(), None),
+    "-" => PathPattern::edge(EdgeDirection::Any, Descriptor::default(), None),
 };
 
 // ElementPatternFiller: intermediary grammar helper
