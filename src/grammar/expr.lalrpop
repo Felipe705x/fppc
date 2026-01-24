@@ -22,7 +22,7 @@ pub Expr: Expr = {
     <l:Expr> "*" <r:Expr> => Expr::binop(BinOpKind::Mul, l, r),
     <l:Expr> "/" <r:Expr> => Expr::binop(BinOpKind::Div, l, r),
     
-    #[precedence(level="1")]
+    #[precedence(level="1")] #[assoc(side="right")]
     NOT <e:Expr> => Expr::unop(UnOpKind::Not, e),
     "-" <e:Expr> => Expr::unop(UnOpKind::Neg, e),
     
