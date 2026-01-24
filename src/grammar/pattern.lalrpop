@@ -1,8 +1,25 @@
 pub PathPattern: PathPattern = {
-    // Node pattern
-    "(" <filler:ElementPatternFiller> ")" => PathPattern::node(filler.0, filler.1),
+    #[precedence(level="2")] #[assoc(side="left")]
+    <l:PathPattern> "|" <r:PathPattern> => PathPattern::union(l, r),
     
-    // Edge patterns
+    #[precedence(level="1")] #[assoc(side="left")]
+    <l:PathPattern> <r:PathPrimary> => PathPattern::concat(l, r),
+    
+    #[precedence(level="0")]
+    <PathPrimary>,
+};
+
+PathPrimary: PathPattern = {
+    <NodePattern>,
+    <EdgePattern>,
+    "(" <PathPattern> ")",
+};
+
+NodePattern: PathPattern = {
+    "(" <filler:ElementPatternFiller> ")" => PathPattern::node(filler.0, filler.1),
+};
+
+EdgePattern: PathPattern = {
     "-[" <filler:ElementPatternFiller> "]->" => PathPattern::edge(EdgeDirection::Right, filler.0, filler.1),
     "<-[" <filler:ElementPatternFiller> "]-" => PathPattern::edge(EdgeDirection::Left, filler.0, filler.1),
     "-[" <filler:ElementPatternFiller> "]-" => PathPattern::edge(EdgeDirection::Any, filler.0, filler.1),

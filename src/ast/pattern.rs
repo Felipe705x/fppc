@@ -7,6 +7,8 @@ pub enum PathPattern {
     Node(Descriptor),
     Filter(Box<PathPattern>, Expr),
     Edge(EdgeDirection, Descriptor),
+    Concat(Box<PathPattern>, Box<PathPattern>),
+    Union(Box<PathPattern>, Box<PathPattern>),
 }
 
 impl PathPattern {
@@ -29,6 +31,14 @@ impl PathPattern {
             Some(expr) => PathPattern::filter(node, expr),
         }
     }
+
+    pub fn concat(left: PathPattern, right: PathPattern) -> Self {
+        PathPattern::Concat(Box::new(left), Box::new(right))
+    }
+
+    pub fn union(left: PathPattern, right: PathPattern) -> Self {
+        PathPattern::Union(Box::new(left), Box::new(right))
+    }
 }
 
 impl From<Descriptor> for PathPattern {
@@ -43,6 +53,8 @@ impl fmt::Debug for PathPattern {
             PathPattern::Node(desc) => write!(f, "Node({:?})", desc),
             PathPattern::Filter(p, e) => write!(f, "Filter({:?}, {:?})", p, e),
             PathPattern::Edge(dir, desc) => write!(f, "Edge({:?}, {:?})", dir, desc),
+            PathPattern::Concat(l, r) => write!(f, "Concat({:?}, {:?})", l, r),
+            PathPattern::Union(l, r) => write!(f, "Union({:?}, {:?})", l, r),
         }
     }
 }

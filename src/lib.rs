@@ -274,6 +274,50 @@ mod tests {
     }
 
     // ==========================================
+    // CONCATENATION PATTERN TESTS
+    // ==========================================
+
+    #[test]
+    fn test_concatenation() {
+        let result = PathPatternParser::new().parse("(x)~[y]~(z)").unwrap();
+        let x = PathPattern::Node(Descriptor {
+            variable: Some(Var("x".to_string())),
+            descriptor_type: DescriptorType {
+                label: LabelType::Star,
+                properties: PropertyType::open(),
+            },
+        });
+        let y = PathPattern::Edge(
+            EdgeDirection::None,
+            Descriptor {
+                variable: Some(Var("y".to_string())),
+                descriptor_type: DescriptorType {
+                    label: LabelType::Star,
+                    properties: PropertyType::open(),
+                },
+            },
+        );
+        let z = PathPattern::Node(Descriptor {
+            variable: Some(Var("z".to_string())),
+            descriptor_type: DescriptorType {
+                label: LabelType::Star,
+                properties: PropertyType::open(),
+            },
+        });
+        let expected = PathPattern::concat(PathPattern::concat(x, y), z);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_union() {
+        let result = PathPatternParser::new().parse("() | ()").unwrap();
+        let a = PathPattern::Node(Descriptor::default());
+        let b = PathPattern::Node(Descriptor::default());
+        let expected = PathPattern::union(a, b);
+        assert_eq!(result, expected);
+    }
+
+    // ==========================================
     // FILTER PATTERN TESTS
     // ==========================================
 
@@ -341,9 +385,16 @@ mod tests {
     #[test]
     fn test_filter_on_edge() {
         let result = PathPatternParser::new()
-            .parse("-[y where y.a>10]->")
+            .parse("(x)-[y where y.a>10]->(z)")
             .unwrap();
-        let expected = PathPattern::Filter(
+        let x = PathPattern::Node(Descriptor {
+            variable: Some(Var("x".to_string())),
+            descriptor_type: DescriptorType {
+                label: LabelType::Star,
+                properties: PropertyType::open(),
+            },
+        });
+        let y = PathPattern::Filter(
             Box::new(PathPattern::Edge(
                 EdgeDirection::Right,
                 Descriptor {
@@ -363,6 +414,14 @@ mod tests {
                 Expr::Constant(Constant::Int(10)),
             )),
         );
+        let z = PathPattern::Node(Descriptor {
+            variable: Some(Var("z".to_string())),
+            descriptor_type: DescriptorType {
+                label: LabelType::Star,
+                properties: PropertyType::open(),
+            },
+        });
+        let expected = PathPattern::concat(PathPattern::concat(x, y), z);
         assert_eq!(result, expected);
     }
 
@@ -517,8 +576,6 @@ mod tests {
     // ==========================================
     // UNIMPLEMENTED FEATURES (skipped)
     // ==========================================
-    // - Concatenation patterns
     // - Repetition patterns (*, +, {n,m})
-    // - Union patterns (|)
     // - Questioned patterns (?)
 }
