@@ -573,6 +573,34 @@ mod tests {
         assert_eq!(result, expected);
     }
 
+    #[test]
+    fn test_unop_3() {
+        let result = PathPatternParser::new()
+            .parse("((x) WHERE -x.status>0)")
+            .unwrap();
+        let expected = PathPattern::Filter(
+            Box::new(PathPattern::Node(Descriptor {
+                variable: Some(Var("x".to_string())),
+                descriptor_type: DescriptorType {
+                    label: LabelType::Star,
+                    properties: PropertyType::open(),
+                },
+            })),
+            Expr::Binop(Binop::new(
+                BinOpKind::Gt,
+                Expr::Unop(Unop::new(
+                    UnOpKind::Neg,
+                    Expr::AttributeLookup(AttributeLookup::new(
+                        Var("x".to_string()),
+                        Var("status".to_string()),
+                    )),
+                )),
+                Expr::Constant(Constant::Int(0)),
+            )),
+        );
+        assert_eq!(result, expected);
+    }
+
     // ==========================================
     // UNIMPLEMENTED FEATURES (skipped)
     // ==========================================

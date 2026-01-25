@@ -12,6 +12,7 @@ pub PathPattern: PathPattern = {
 PathPrimary: PathPattern = {
     <NodePattern>,
     <EdgePattern>,
+    <FilterPattern>,
     "(" <PathPattern> ")",
 };
 
@@ -28,6 +29,10 @@ EdgePattern: PathPattern = {
     "<-" => PathPattern::edge(EdgeDirection::Left, Descriptor::default(), None),
     "~" => PathPattern::edge(EdgeDirection::None, Descriptor::default(), None),
     "-" => PathPattern::edge(EdgeDirection::Any, Descriptor::default(), None),
+};
+
+FilterPattern: PathPattern = {
+    "(" <p:PathPattern> WHERE <expr:Expr> ")" => PathPattern::filter(p, expr),
 };
 
 // ElementPatternFiller: intermediary grammar helper
