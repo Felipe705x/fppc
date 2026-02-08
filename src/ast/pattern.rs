@@ -1,6 +1,5 @@
 use super::descriptor::Descriptor;
 use super::expr::Expr;
-use std::fmt;
 
 /// Quantifiers for path pattern repetition
 #[derive(PartialEq, Clone, Copy, Debug)]
@@ -15,7 +14,7 @@ pub enum Quantifier {
     Range(Option<u64>, Option<u64>),
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum PathPattern {
     Node(Descriptor),
     Filter(Box<PathPattern>, Expr),
@@ -69,20 +68,6 @@ impl PathPattern {
 impl From<Descriptor> for PathPattern {
     fn from(descriptor: Descriptor) -> Self {
         PathPattern::Node(descriptor)
-    }
-}
-
-impl fmt::Debug for PathPattern {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            PathPattern::Node(desc) => write!(f, "Node({:?})", desc),
-            PathPattern::Filter(p, e) => write!(f, "Filter({:?}, {:?})", p, e),
-            PathPattern::Edge(dir, desc) => write!(f, "Edge({:?}, {:?})", dir, desc),
-            PathPattern::Concat(l, r) => write!(f, "Concat({:?}, {:?})", l, r),
-            PathPattern::Union(l, r) => write!(f, "Union({:?}, {:?})", l, r),
-            PathPattern::Questioned(p) => write!(f, "Questioned({:?})", p),
-            PathPattern::Quantified(p, q) => write!(f, "Quantified({:?}, {:?})", p, q),
-        }
     }
 }
 
