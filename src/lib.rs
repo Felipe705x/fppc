@@ -4,10 +4,7 @@ pub mod ast;
 
 lalrpop_mod!(pub grammar);
 
-pub use crate::grammar::{
-    DescriptorParser, DescriptorTypeParser, ExprParser, LabelTypeParser, PathPatternParser,
-    PropertyTypeParser, SimpleTypeParser,
-};
+pub use crate::grammar::{DescriptorParser, ExprParser, PathPatternParser};
 
 #[cfg(test)]
 mod tests {

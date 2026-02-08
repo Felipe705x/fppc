@@ -5,13 +5,13 @@ pub Descriptor: Descriptor = {
     => Descriptor::default(),
 };
 
-pub DescriptorType: DescriptorType = {
+DescriptorType: DescriptorType = {
     <label:LabelType> <props:PropertyType> => DescriptorType::new(label, props),
     <label:LabelType> => DescriptorType::with_label(label),
     <props:PropertyType> => DescriptorType::with_properties(props),
 };
 
-pub PropertyType: PropertyType = {
+PropertyType: PropertyType = {
     "{" "}" => PropertyType::open(),
     "{" <RecordElements> "}" => PropertyType::Open(<>),
     "{{" "}}" => PropertyType::closed(),
