@@ -33,16 +33,25 @@ impl Descriptor {
     }
 }
 
-// Flattened: Descriptor(var, label, props)
 impl fmt::Debug for Descriptor {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "Descriptor({:?}, {:?}, {:?})",
-            self.variable,
-            self.descriptor_type.label,
-            self.descriptor_type.properties
-        )
+        if f.alternate() {
+            // Pretty: use full struct format with newlines
+            f.debug_struct("Descriptor")
+                .field("variable", &self.variable)
+                .field("label", &self.descriptor_type.label)
+                .field("properties", &self.descriptor_type.properties)
+                .finish()
+        } else {
+            // Compact: flattened tuple format
+            write!(
+                f,
+                "Descriptor({:?}, {:?}, {:?})",
+                self.variable,
+                self.descriptor_type.label,
+                self.descriptor_type.properties
+            )
+        }
     }
 }
 
