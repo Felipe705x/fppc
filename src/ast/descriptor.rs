@@ -47,9 +47,7 @@ impl fmt::Debug for Descriptor {
             write!(
                 f,
                 "Descriptor({:?}, {:?}, {:?})",
-                self.variable,
-                self.descriptor_type.label,
-                self.descriptor_type.properties
+                self.variable, self.descriptor_type.label, self.descriptor_type.properties
             )
         }
     }

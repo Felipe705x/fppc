@@ -9,10 +9,10 @@ pub use crate::grammar::{DescriptorParser, ExprParser, PathPatternParser};
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ast::{Descriptor, DescriptorType, EdgeDirection, PathPattern, Quantifier};
     use ast::{
         BaseType, BinOpKind, Constant, Expr, LabelType, PropertyType, SimpleType, UnOpKind, Var,
     };
+    use ast::{Descriptor, DescriptorType, EdgeDirection, PathPattern, Quantifier};
     use std::collections::HashMap;
 
     // ==========================================
