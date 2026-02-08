@@ -1,4 +1,4 @@
-pub LabelType: LabelType = {
+LabelType: LabelType = {
     #[precedence(level="2")] #[assoc(side="left")]
     <l:LabelType> "|" <r:LabelType> => LabelType::or(l, r),
     

@@ -4,15 +4,14 @@ use std::io::{self, Write};
 fn main() {
     println!("=== FPPC Parser Interactive Console ===");
     println!("Commands:");
-    println!("  label <input>      - Parse as LabelType");
-    println!("  simple <input>     - Parse as SimpleType");
-    println!("  property <input>   - Parse as PropertyType");
-    println!("  descriptor_type <input> - Parse as DescriptorType");
+    println!("  expr <input>       - Parse as Expr");
     println!("  descriptor <input> - Parse as Descriptor");
     println!("  path <input>       - Parse as PathPattern");
-    println!("  expr <input>       - Parse as Expr");
+    println!("  pretty             - Toggle pretty printing");
     println!("  quit               - Exit");
     println!();
+
+    let mut pretty = false;
 
     loop {
         print!("> ");
@@ -30,51 +29,50 @@ fn main() {
         }
 
         if input == "quit" || input == "exit" {
-            println!("Goodbye!");
             break;
+        }
+
+        if input == "pretty" {
+            pretty = !pretty;
+            println!("Pretty printing: {}", if pretty { "on" } else { "off" });
+            continue;
         }
 
         let parts: Vec<&str> = input.splitn(2, ' ').collect();
         if parts.len() < 2 {
-            eprintln!("Error: Please provide a command and input. Example: node (p: Person)");
+            eprintln!("Error: Please provide a command and input. Example: path (p: Person)");
             continue;
         }
 
         let command = parts[0];
         let parse_input = parts[1];
 
+        macro_rules! print_result {
+            ($result:expr) => {
+                if pretty {
+                    println!("✓ Valid: {:#?}", $result)
+                } else {
+                    println!("✓ Valid: {:?}", $result)
+                }
+            };
+        }
+
         match command {
-            "label" => match LabelTypeParser::new().parse(parse_input) {
-                Ok(result) => println!("✓ Valid: {:?}", result),
-                Err(e) => eprintln!("✗ Parse error: {}", e),
-            },
-            "simple" => match SimpleTypeParser::new().parse(parse_input) {
-                Ok(result) => println!("✓ Valid: {:?}", result),
-                Err(e) => eprintln!("✗ Parse error: {}", e),
-            },
-            "property" => match PropertyTypeParser::new().parse(parse_input) {
-                Ok(result) => println!("✓ Valid: {:?}", result),
-                Err(e) => eprintln!("✗ Parse error: {}", e),
-            },
-            "descriptor_type" => match DescriptorTypeParser::new().parse(parse_input) {
-                Ok(result) => println!("✓ Valid: {:?}", result),
+            "expr" => match ExprParser::new().parse(parse_input) {
+                Ok(result) => print_result!(result),
                 Err(e) => eprintln!("✗ Parse error: {}", e),
             },
             "descriptor" => match DescriptorParser::new().parse(parse_input) {
-                Ok(result) => println!("✓ Valid: {:?}", result),
+                Ok(result) => print_result!(result),
                 Err(e) => eprintln!("✗ Parse error: {}", e),
             },
             "path" => match PathPatternParser::new().parse(parse_input) {
-                Ok(result) => println!("✓ Valid: {:?}", result),
-                Err(e) => eprintln!("✗ Parse error: {}", e),
-            },
-            "expr" => match ExprParser::new().parse(parse_input) {
-                Ok(result) => println!("✓ Valid: {:?}", result),
+                Ok(result) => print_result!(result),
                 Err(e) => eprintln!("✗ Parse error: {}", e),
             },
             _ => {
                 eprintln!(
-                    "Unknown command: {}. Use: label, simple, property, descriptor_type, descriptor, filler, node, or expr",
+                    "Unknown command: {}. Use: expr, descriptor, or path",
                     command
                 );
             }

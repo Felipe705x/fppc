@@ -1,6 +1,4 @@
-use std::fmt;
-
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub struct Var(pub String);
 
 impl From<&str> for Var {
@@ -12,11 +10,5 @@ impl From<&str> for Var {
 impl From<String> for Var {
     fn from(s: String) -> Self {
         Var(s)
-    }
-}
-
-impl fmt::Debug for Var {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Var({})", self.0)
     }
 }

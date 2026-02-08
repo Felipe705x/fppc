@@ -4,21 +4,15 @@ pub mod ast;
 
 lalrpop_mod!(pub grammar);
 
-pub use crate::grammar::{
-    DescriptorParser, DescriptorTypeParser, ExprParser, LabelTypeParser, PathPatternParser,
-    PropertyTypeParser, SimpleTypeParser,
-};
+pub use crate::grammar::{DescriptorParser, ExprParser, PathPatternParser};
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use ast::{
-        AttributeLookup, Binop, Descriptor, DescriptorType, EdgeDirection, PathPattern, Quantifier,
-        Unop,
-    };
-    use ast::{
         BaseType, BinOpKind, Constant, Expr, LabelType, PropertyType, SimpleType, UnOpKind, Var,
     };
+    use ast::{Descriptor, DescriptorType, EdgeDirection, PathPattern, Quantifier};
     use std::collections::HashMap;
 
     // ==========================================
@@ -155,9 +149,9 @@ mod tests {
         let expected = PathPattern::Node(Descriptor {
             variable: None,
             descriptor_type: DescriptorType {
-                label: LabelType::And(
-                    Box::new(LabelType::Label("Person".to_string())),
-                    Box::new(LabelType::Label("Company".to_string())),
+                label: LabelType::and(
+                    LabelType::Label("Person".to_string()),
+                    LabelType::Label("Company".to_string()),
                 ),
                 properties: PropertyType::open(),
             },
@@ -172,14 +166,14 @@ mod tests {
     #[test]
     fn test_edge_right_empty() {
         let result = PathPatternParser::new().parse("->").unwrap();
-        let expected = PathPattern::edge(EdgeDirection::Right, Descriptor::default(), None);
+        let expected = PathPattern::Edge(EdgeDirection::Right, Descriptor::default());
         assert_eq!(result, expected);
     }
 
     #[test]
     fn test_edge_right_empty_alt() {
         let result = PathPatternParser::new().parse("-[]->").unwrap();
-        let expected = PathPattern::edge(EdgeDirection::Right, Descriptor::default(), None);
+        let expected = PathPattern::Edge(EdgeDirection::Right, Descriptor::default());
         assert_eq!(result, expected);
     }
 
@@ -190,7 +184,7 @@ mod tests {
             .unwrap();
         let mut props = HashMap::new();
         props.insert("a".to_string(), SimpleType::Base(BaseType::Int));
-        let expected = PathPattern::edge(
+        let expected = PathPattern::Edge(
             EdgeDirection::Right,
             Descriptor {
                 variable: Some(Var("x".to_string())),
@@ -199,7 +193,6 @@ mod tests {
                     properties: PropertyType::Open(props),
                 },
             },
-            None,
         );
         assert_eq!(result, expected);
     }
@@ -207,14 +200,14 @@ mod tests {
     #[test]
     fn test_edge_left_empty() {
         let result = PathPatternParser::new().parse("<-").unwrap();
-        let expected = PathPattern::edge(EdgeDirection::Left, Descriptor::default(), None);
+        let expected = PathPattern::Edge(EdgeDirection::Left, Descriptor::default());
         assert_eq!(result, expected);
     }
 
     #[test]
     fn test_edge_left_empty_alt() {
         let result = PathPatternParser::new().parse("<-[]-").unwrap();
-        let expected = PathPattern::edge(EdgeDirection::Left, Descriptor::default(), None);
+        let expected = PathPattern::Edge(EdgeDirection::Left, Descriptor::default());
         assert_eq!(result, expected);
     }
 
@@ -225,7 +218,7 @@ mod tests {
             .unwrap();
         let mut props = HashMap::new();
         props.insert("a".to_string(), SimpleType::Base(BaseType::Int));
-        let expected = PathPattern::edge(
+        let expected = PathPattern::Edge(
             EdgeDirection::Left,
             Descriptor {
                 variable: Some(Var("x".to_string())),
@@ -234,7 +227,6 @@ mod tests {
                     properties: PropertyType::Open(props),
                 },
             },
-            None,
         );
         assert_eq!(result, expected);
     }
@@ -242,14 +234,14 @@ mod tests {
     #[test]
     fn test_edge_non_directional_empty() {
         let result = PathPatternParser::new().parse("~").unwrap();
-        let expected = PathPattern::edge(EdgeDirection::None, Descriptor::default(), None);
+        let expected = PathPattern::Edge(EdgeDirection::None, Descriptor::default());
         assert_eq!(result, expected);
     }
 
     #[test]
     fn test_edge_non_directional_empty_alt() {
         let result = PathPatternParser::new().parse("~[]~").unwrap();
-        let expected = PathPattern::edge(EdgeDirection::None, Descriptor::default(), None);
+        let expected = PathPattern::Edge(EdgeDirection::None, Descriptor::default());
         assert_eq!(result, expected);
     }
 
@@ -260,7 +252,7 @@ mod tests {
             .unwrap();
         let mut props = HashMap::new();
         props.insert("a".to_string(), SimpleType::Base(BaseType::Int));
-        let expected = PathPattern::edge(
+        let expected = PathPattern::Edge(
             EdgeDirection::None,
             Descriptor {
                 variable: Some(Var("x".to_string())),
@@ -269,7 +261,6 @@ mod tests {
                     properties: PropertyType::Open(props),
                 },
             },
-            None,
         );
         assert_eq!(result, expected);
     }
@@ -325,22 +316,19 @@ mod tests {
     #[test]
     fn test_filter_attribute_gt() {
         let result = PathPatternParser::new().parse("(x where x.a>10)").unwrap();
-        let expected = PathPattern::Filter(
-            Box::new(PathPattern::Node(Descriptor {
+        let expected = PathPattern::filter(
+            PathPattern::Node(Descriptor {
                 variable: Some(Var("x".to_string())),
                 descriptor_type: DescriptorType {
                     label: LabelType::Star,
                     properties: PropertyType::open(),
                 },
-            })),
-            Expr::Binop(Binop::new(
+            }),
+            Expr::binop(
                 BinOpKind::Gt,
-                Expr::AttributeLookup(AttributeLookup::new(
-                    Var("x".to_string()),
-                    Var("a".to_string()),
-                )),
+                Expr::attr_lookup(Var("x".to_string()), Var("a".to_string())),
                 Expr::Constant(Constant::Int(10)),
-            )),
+            ),
         );
         assert_eq!(result, expected);
     }
@@ -350,35 +338,35 @@ mod tests {
         let result = PathPatternParser::new()
             .parse("(x where 11>10 and (1 = 2 or 3>='1'))")
             .unwrap();
-        let expected = PathPattern::Filter(
-            Box::new(PathPattern::Node(Descriptor {
+        let expected = PathPattern::filter(
+            PathPattern::Node(Descriptor {
                 variable: Some(Var("x".to_string())),
                 descriptor_type: DescriptorType {
                     label: LabelType::Star,
                     properties: PropertyType::open(),
                 },
-            })),
-            Expr::Binop(Binop::new(
+            }),
+            Expr::binop(
                 BinOpKind::And,
-                Expr::Binop(Binop::new(
+                Expr::binop(
                     BinOpKind::Gt,
                     Expr::Constant(Constant::Int(11)),
                     Expr::Constant(Constant::Int(10)),
-                )),
-                Expr::Binop(Binop::new(
+                ),
+                Expr::binop(
                     BinOpKind::Or,
-                    Expr::Binop(Binop::new(
+                    Expr::binop(
                         BinOpKind::Eq,
                         Expr::Constant(Constant::Int(1)),
                         Expr::Constant(Constant::Int(2)),
-                    )),
-                    Expr::Binop(Binop::new(
+                    ),
+                    Expr::binop(
                         BinOpKind::Ge,
                         Expr::Constant(Constant::Int(3)),
                         Expr::Constant(Constant::String("1".to_string())),
-                    )),
-                )),
-            )),
+                    ),
+                ),
+            ),
         );
         assert_eq!(result, expected);
     }
@@ -395,8 +383,8 @@ mod tests {
                 properties: PropertyType::open(),
             },
         });
-        let y = PathPattern::Filter(
-            Box::new(PathPattern::Edge(
+        let y = PathPattern::filter(
+            PathPattern::Edge(
                 EdgeDirection::Right,
                 Descriptor {
                     variable: Some(Var("y".to_string())),
@@ -405,15 +393,12 @@ mod tests {
                         properties: PropertyType::open(),
                     },
                 },
-            )),
-            Expr::Binop(Binop::new(
+            ),
+            Expr::binop(
                 BinOpKind::Gt,
-                Expr::AttributeLookup(AttributeLookup::new(
-                    Var("y".to_string()),
-                    Var("a".to_string()),
-                )),
+                Expr::attr_lookup(Var("y".to_string()), Var("a".to_string())),
                 Expr::Constant(Constant::Int(10)),
-            )),
+            ),
         );
         let z = PathPattern::Node(Descriptor {
             variable: Some(Var("z".to_string())),
@@ -431,35 +416,35 @@ mod tests {
         let result = PathPatternParser::new()
             .parse("(x where 11 = 10 and 1 = 2 or 1=2)")
             .unwrap();
-        let expected = PathPattern::Filter(
-            Box::new(PathPattern::Node(Descriptor {
+        let expected = PathPattern::filter(
+            PathPattern::Node(Descriptor {
                 variable: Some(Var("x".to_string())),
                 descriptor_type: DescriptorType {
                     label: LabelType::Star,
                     properties: PropertyType::open(),
                 },
-            })),
-            Expr::Binop(Binop::new(
+            }),
+            Expr::binop(
                 BinOpKind::Or,
-                Expr::Binop(Binop::new(
+                Expr::binop(
                     BinOpKind::And,
-                    Expr::Binop(Binop::new(
+                    Expr::binop(
                         BinOpKind::Eq,
                         Expr::Constant(Constant::Int(11)),
                         Expr::Constant(Constant::Int(10)),
-                    )),
-                    Expr::Binop(Binop::new(
+                    ),
+                    Expr::binop(
                         BinOpKind::Eq,
                         Expr::Constant(Constant::Int(1)),
                         Expr::Constant(Constant::Int(2)),
-                    )),
-                )),
-                Expr::Binop(Binop::new(
+                    ),
+                ),
+                Expr::binop(
                     BinOpKind::Eq,
                     Expr::Constant(Constant::Int(1)),
                     Expr::Constant(Constant::Int(2)),
-                )),
-            )),
+                ),
+            ),
         );
         assert_eq!(result, expected);
     }
@@ -469,23 +454,23 @@ mod tests {
         let result = PathPatternParser::new()
             .parse("(x where true and 1>2)")
             .unwrap();
-        let expected = PathPattern::Filter(
-            Box::new(PathPattern::Node(Descriptor {
+        let expected = PathPattern::filter(
+            PathPattern::Node(Descriptor {
                 variable: Some(Var("x".to_string())),
                 descriptor_type: DescriptorType {
                     label: LabelType::Star,
                     properties: PropertyType::open(),
                 },
-            })),
-            Expr::Binop(Binop::new(
+            }),
+            Expr::binop(
                 BinOpKind::And,
                 Expr::Constant(Constant::Bool(true)),
-                Expr::Binop(Binop::new(
+                Expr::binop(
                     BinOpKind::Gt,
                     Expr::Constant(Constant::Int(1)),
                     Expr::Constant(Constant::Int(2)),
-                )),
-            )),
+                ),
+            ),
         );
         assert_eq!(result, expected);
     }
@@ -495,29 +480,23 @@ mod tests {
         let result = PathPatternParser::new()
             .parse("(x where x.a>x.b>1)")
             .unwrap();
-        let expected = PathPattern::Filter(
-            Box::new(PathPattern::Node(Descriptor {
+        let expected = PathPattern::filter(
+            PathPattern::Node(Descriptor {
                 variable: Some(Var("x".to_string())),
                 descriptor_type: DescriptorType {
                     label: LabelType::Star,
                     properties: PropertyType::open(),
                 },
-            })),
-            Expr::Binop(Binop::new(
+            }),
+            Expr::binop(
                 BinOpKind::Gt,
-                Expr::Binop(Binop::new(
+                Expr::binop(
                     BinOpKind::Gt,
-                    Expr::AttributeLookup(AttributeLookup::new(
-                        Var("x".to_string()),
-                        Var("a".to_string()),
-                    )),
-                    Expr::AttributeLookup(AttributeLookup::new(
-                        Var("x".to_string()),
-                        Var("b".to_string()),
-                    )),
-                )),
+                    Expr::attr_lookup(Var("x".to_string()), Var("a".to_string())),
+                    Expr::attr_lookup(Var("x".to_string()), Var("b".to_string())),
+                ),
                 Expr::Constant(Constant::Int(1)),
-            )),
+            ),
         );
         assert_eq!(result, expected);
     }
@@ -527,21 +506,18 @@ mod tests {
         let result = PathPatternParser::new()
             .parse("(x WHERE not x.status)")
             .unwrap();
-        let expected = PathPattern::Filter(
-            Box::new(PathPattern::Node(Descriptor {
+        let expected = PathPattern::filter(
+            PathPattern::Node(Descriptor {
                 variable: Some(Var("x".to_string())),
                 descriptor_type: DescriptorType {
                     label: LabelType::Star,
                     properties: PropertyType::open(),
                 },
-            })),
-            Expr::Unop(Unop::new(
+            }),
+            Expr::unop(
                 UnOpKind::Not,
-                Expr::AttributeLookup(AttributeLookup::new(
-                    Var("x".to_string()),
-                    Var("status".to_string()),
-                )),
-            )),
+                Expr::attr_lookup(Var("x".to_string()), Var("status".to_string())),
+            ),
         );
         assert_eq!(result, expected);
     }
@@ -551,25 +527,22 @@ mod tests {
         let result = PathPatternParser::new()
             .parse("(x WHERE -x.status>0)")
             .unwrap();
-        let expected = PathPattern::Filter(
-            Box::new(PathPattern::Node(Descriptor {
+        let expected = PathPattern::filter(
+            PathPattern::Node(Descriptor {
                 variable: Some(Var("x".to_string())),
                 descriptor_type: DescriptorType {
                     label: LabelType::Star,
                     properties: PropertyType::open(),
                 },
-            })),
-            Expr::Binop(Binop::new(
+            }),
+            Expr::binop(
                 BinOpKind::Gt,
-                Expr::Unop(Unop::new(
+                Expr::unop(
                     UnOpKind::Neg,
-                    Expr::AttributeLookup(AttributeLookup::new(
-                        Var("x".to_string()),
-                        Var("status".to_string()),
-                    )),
-                )),
+                    Expr::attr_lookup(Var("x".to_string()), Var("status".to_string())),
+                ),
                 Expr::Constant(Constant::Int(0)),
-            )),
+            ),
         );
         assert_eq!(result, expected);
     }
@@ -579,25 +552,22 @@ mod tests {
         let result = PathPatternParser::new()
             .parse("((x) WHERE -x.status>0)")
             .unwrap();
-        let expected = PathPattern::Filter(
-            Box::new(PathPattern::Node(Descriptor {
+        let expected = PathPattern::filter(
+            PathPattern::Node(Descriptor {
                 variable: Some(Var("x".to_string())),
                 descriptor_type: DescriptorType {
                     label: LabelType::Star,
                     properties: PropertyType::open(),
                 },
-            })),
-            Expr::Binop(Binop::new(
+            }),
+            Expr::binop(
                 BinOpKind::Gt,
-                Expr::Unop(Unop::new(
+                Expr::unop(
                     UnOpKind::Neg,
-                    Expr::AttributeLookup(AttributeLookup::new(
-                        Var("x".to_string()),
-                        Var("status".to_string()),
-                    )),
-                )),
+                    Expr::attr_lookup(Var("x".to_string()), Var("status".to_string())),
+                ),
                 Expr::Constant(Constant::Int(0)),
-            )),
+            ),
         );
         assert_eq!(result, expected);
     }
