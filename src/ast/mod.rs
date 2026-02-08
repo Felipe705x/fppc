@@ -6,7 +6,7 @@ mod types;
 mod var;
 
 pub use descriptor::{Descriptor, DescriptorType, PropertyType};
-pub use expr::{AttributeLookup, BinOpKind, Binop, Constant, Expr, UnOpKind, Unop};
+pub use expr::{BinOpKind, Constant, Expr, UnOpKind};
 pub use label::LabelType;
 pub use pattern::{EdgeDirection, PathPattern, Quantifier};
 pub use types::{BaseType, SimpleType};
