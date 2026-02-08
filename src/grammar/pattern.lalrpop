@@ -3,10 +3,16 @@ pub PathPattern: PathPattern = {
     <l:PathPattern> "|" <r:PathPattern> => PathPattern::union(l, r),
     
     #[precedence(level="1")] #[assoc(side="left")]
-    <l:PathPattern> <r:PathPrimary> => PathPattern::concat(l, r),
+    <l:PathPattern> <r:PathFactor> => PathPattern::concat(l, r),
     
     #[precedence(level="0")]
+    <PathFactor>,
+};
+
+PathFactor: PathPattern = {
     <PathPrimary>,
+    <p:PathPrimary> <q:Quantifier> => PathPattern::quantified(p, q),
+    <p:PathPrimary> "?" => PathPattern::questioned(p),
 };
 
 PathPrimary: PathPattern = {
@@ -44,3 +50,10 @@ ElementPatternFiller: (Descriptor, Option<Expr>) = {
 };
 
 WHERE: () = { "where", "WHERE" };
+
+Quantifier: Quantifier = {
+    "*" => Quantifier::Star,
+    "+" => Quantifier::Plus,
+    "{" <n:UnsignedNumber> "}" => Quantifier::Fixed(n),
+    "{" <lo:UnsignedNumber?> "," <hi:UnsignedNumber?> "}" => Quantifier::Range(lo, hi),
+};

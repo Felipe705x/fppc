@@ -109,11 +109,8 @@ impl fmt::Debug for Unop {
 /// Represents a constant expression (string, int, or boolean).
 #[derive(PartialEq, Clone)]
 pub enum Constant {
-    /// A constant string value (SConstant in Python)
     String(String),
-    /// A constant integer (Z) value (ZConstant in Python)
     Int(i64),
-    /// A constant boolean value
     Bool(bool),
 }
 

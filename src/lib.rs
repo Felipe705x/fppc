@@ -13,7 +13,8 @@ pub use crate::grammar::{
 mod tests {
     use super::*;
     use ast::{
-        AttributeLookup, Binop, Descriptor, DescriptorType, EdgeDirection, PathPattern, Unop,
+        AttributeLookup, Binop, Descriptor, DescriptorType, EdgeDirection, PathPattern, Quantifier,
+        Unop,
     };
     use ast::{
         BaseType, BinOpKind, Constant, Expr, LabelType, PropertyType, SimpleType, UnOpKind, Var,
@@ -602,8 +603,76 @@ mod tests {
     }
 
     // ==========================================
-    // UNIMPLEMENTED FEATURES (skipped)
+    // REPETITION PATTERN TESTS
     // ==========================================
-    // - Repetition patterns (*, +, {n,m})
-    // - Questioned patterns (?)
+
+    #[test]
+    fn test_repetition() {
+        let x_node = || {
+            PathPattern::Node(Descriptor {
+                variable: Some(Var("x".to_string())),
+                descriptor_type: DescriptorType {
+                    label: LabelType::Star,
+                    properties: PropertyType::open(),
+                },
+            })
+        };
+
+        // (x)* → zero or more
+        assert_eq!(
+            PathPatternParser::new().parse("(x)*").unwrap(),
+            PathPattern::quantified(x_node(), Quantifier::Star)
+        );
+
+        // (x)+ → one or more
+        assert_eq!(
+            PathPatternParser::new().parse("(x)+").unwrap(),
+            PathPattern::quantified(x_node(), Quantifier::Plus)
+        );
+
+        // (x){1,2} → between 1 and 2
+        assert_eq!(
+            PathPatternParser::new().parse("(x){1,2}").unwrap(),
+            PathPattern::quantified(x_node(), Quantifier::Range(Some(1), Some(2)))
+        );
+
+        // (x){2,} → 2 or more
+        assert_eq!(
+            PathPatternParser::new().parse("(x){2,}").unwrap(),
+            PathPattern::quantified(x_node(), Quantifier::Range(Some(2), None))
+        );
+    }
+
+    #[test]
+    fn test_repetition_no_max() {
+        // (x){1,} → 1 or more (no upper bound)
+        let result = PathPatternParser::new().parse("(x){1,}").unwrap();
+        let inner = PathPattern::Node(Descriptor {
+            variable: Some(Var("x".to_string())),
+            descriptor_type: DescriptorType {
+                label: LabelType::Star,
+                properties: PropertyType::open(),
+            },
+        });
+        let expected = PathPattern::quantified(inner, Quantifier::Range(Some(1), None));
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_questioned_edge() {
+        // -[z]->? → optional edge
+        let result = PathPatternParser::new().parse("-[z]->?").unwrap();
+        let inner = PathPattern::Edge(
+            EdgeDirection::Right,
+            Descriptor {
+                variable: Some(Var("z".to_string())),
+                descriptor_type: DescriptorType {
+                    label: LabelType::Star,
+                    properties: PropertyType::open(),
+                },
+            },
+        );
+        let expected = PathPattern::questioned(inner);
+        assert_eq!(result, expected);
+    }
 }
