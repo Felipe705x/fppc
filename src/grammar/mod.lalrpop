@@ -1,6 +1,6 @@
 use crate::ast::{
     LabelType, SimpleType, BaseType, DescriptorType,
-    Descriptor, PropertyType, PathPattern, EdgeDirection,
+    Descriptor, PropertyType, PathPattern, EdgeDirection, Quantifier,
     Expr, Constant, BinOpKind, UnOpKind,
 };
 use std::collections::HashMap;
@@ -8,3 +8,17 @@ use std::collections::HashMap;
 grammar;
 
 Name: String = r"[a-zA-Z_][a-zA-Z0-9_]*" => <>.to_string();
+
+Number: i64 = r"\d+" =>? {
+    <>.parse::<i64>()
+        .map_err(|_| lalrpop_util::ParseError::User {
+            error: "number literal exceeds maximum value (i64)"
+        })
+};
+
+UnsignedNumber: u64 = r"\d+" =>? {
+    <>.parse::<u64>()
+        .map_err(|_| lalrpop_util::ParseError::User {
+            error: "number literal exceeds maximum value (u64)"
+        })
+};

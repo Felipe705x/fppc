@@ -55,8 +55,6 @@ Boolean: bool = {
     FALSE => false,
 };
 
-Number: i64 = r"\d+" => <>.parse().unwrap();
-
 AND: () = { "and", "AND" };
 OR: () = { "or", "OR" };
 NOT: () = { "not", "NOT" };
