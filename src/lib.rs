@@ -13,7 +13,8 @@ pub use crate::grammar::{
 mod tests {
     use super::*;
     use ast::{
-        AttributeLookup, Binop, Descriptor, DescriptorType, EdgeDirection, PathPattern, Quantifier, Unop,
+        AttributeLookup, Binop, Descriptor, DescriptorType, EdgeDirection, PathPattern, Quantifier,
+        Unop,
     };
     use ast::{
         BaseType, BinOpKind, Constant, Expr, LabelType, PropertyType, SimpleType, UnOpKind, Var,
@@ -607,13 +608,15 @@ mod tests {
 
     #[test]
     fn test_repetition() {
-        let x_node = || PathPattern::Node(Descriptor {
-            variable: Some(Var("x".to_string())),
-            descriptor_type: DescriptorType {
-                label: LabelType::Star,
-                properties: PropertyType::open(),
-            },
-        });
+        let x_node = || {
+            PathPattern::Node(Descriptor {
+                variable: Some(Var("x".to_string())),
+                descriptor_type: DescriptorType {
+                    label: LabelType::Star,
+                    properties: PropertyType::open(),
+                },
+            })
+        };
 
         // (x)* → zero or more
         assert_eq!(
