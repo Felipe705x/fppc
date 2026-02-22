@@ -1,14 +1,10 @@
-use fppc::*;
+use fppc::parse;
 use std::io::{self, Write};
 
 fn main() {
     println!("=== FPPC Parser Interactive Console ===");
-    println!("Commands:");
-    println!("  expr <input>       - Parse as Expr");
-    println!("  descriptor <input> - Parse as Descriptor");
-    println!("  path <input>       - Parse as PathPattern");
-    println!("  pretty             - Toggle pretty printing");
-    println!("  quit               - Exit");
+    println!("Enter a path pattern to parse, or 'quit' to exit.");
+    println!("Toggle pretty printing with 'pretty'.");
     println!();
 
     let mut pretty = false;
@@ -38,44 +34,15 @@ fn main() {
             continue;
         }
 
-        let parts: Vec<&str> = input.splitn(2, ' ').collect();
-        if parts.len() < 2 {
-            eprintln!("Error: Please provide a command and input. Example: path (p: Person)");
-            continue;
-        }
-
-        let command = parts[0];
-        let parse_input = parts[1];
-
-        macro_rules! print_result {
-            ($result:expr) => {
+        match parse(input) {
+            Ok(result) => {
                 if pretty {
-                    println!("✓ Valid: {:#?}", $result)
+                    println!("✓ {:#?}", result)
                 } else {
-                    println!("✓ Valid: {:?}", $result)
+                    println!("✓ {:?}", result)
                 }
-            };
-        }
-
-        match command {
-            "expr" => match ExprParser::new().parse(parse_input) {
-                Ok(result) => print_result!(result),
-                Err(e) => eprintln!("✗ Parse error: {}", e),
-            },
-            "descriptor" => match DescriptorParser::new().parse(parse_input) {
-                Ok(result) => print_result!(result),
-                Err(e) => eprintln!("✗ Parse error: {}", e),
-            },
-            "path" => match PathPatternParser::new().parse(parse_input) {
-                Ok(result) => print_result!(result),
-                Err(e) => eprintln!("✗ Parse error: {}", e),
-            },
-            _ => {
-                eprintln!(
-                    "Unknown command: {}. Use: expr, descriptor, or path",
-                    command
-                );
             }
+            Err(e) => eprintln!("✗ Parse error: {}", e),
         }
     }
 }
