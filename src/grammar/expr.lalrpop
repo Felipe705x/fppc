@@ -1,4 +1,4 @@
-pub Expr: Expr = {
+Expr: Expr = {
     #[precedence(level="6")] #[assoc(side="left")]
     <l:Expr> OR <r:Expr> => Expr::binop(BinOpKind::Or, l, r),
 
