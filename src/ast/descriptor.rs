@@ -83,6 +83,8 @@ impl DescriptorType {
 pub enum PropertyType {
     Open(HashMap<String, SimpleType>),
     Closed(HashMap<String, SimpleType>),
+    #[doc(hidden)]
+    Zero,
 }
 
 impl PropertyType {
