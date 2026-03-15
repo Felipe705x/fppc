@@ -76,9 +76,7 @@ impl SimpleType {
     pub fn is_empty(t: &SimpleType) -> bool {
         match t {
             SimpleType::Zero => true,
-            SimpleType::Union(t1, t2) => {
-                SimpleType::is_empty(t1) && SimpleType::is_empty(t2)
-            }
+            SimpleType::Union(t1, t2) => SimpleType::is_empty(t1) && SimpleType::is_empty(t2),
             SimpleType::List(inner) => SimpleType::is_empty(inner),
             _ => false,
         }

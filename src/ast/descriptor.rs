@@ -238,19 +238,28 @@ impl PropertyType {
             (PropertyType::Closed(_), PropertyType::Closed(_)) => {
                 // Must have same keys
                 t1.keys() == t2.keys()
-                    && t2.keys().iter().all(|k| SimpleType::is_subtype(&t1.get(k), &t2.get(k)))
+                    && t2
+                        .keys()
+                        .iter()
+                        .all(|k| SimpleType::is_subtype(&t1.get(k), &t2.get(k)))
             }
 
             (PropertyType::Closed(_), PropertyType::Open(_)) => {
                 // Open keys must be subset of closed keys
                 t2.keys().is_subset(&t1.keys())
-                    && t2.keys().iter().all(|k| SimpleType::is_subtype(&t1.get(k), &t2.get(k)))
+                    && t2
+                        .keys()
+                        .iter()
+                        .all(|k| SimpleType::is_subtype(&t1.get(k), &t2.get(k)))
             }
 
             (PropertyType::Open(_), PropertyType::Closed(_)) => {
                 // Open keys must be subset of closed keys
                 t1.keys().is_subset(&t2.keys())
-                    && t1.keys().iter().all(|k| SimpleType::is_subtype(&t1.get(k), &t2.get(k)))
+                    && t1
+                        .keys()
+                        .iter()
+                        .all(|k| SimpleType::is_subtype(&t1.get(k), &t2.get(k)))
             }
 
             _ => false,
