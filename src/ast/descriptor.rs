@@ -77,6 +77,37 @@ impl DescriptorType {
             properties,
         }
     }
+
+    /// Returns the top-level wildcard descriptor: (*,*).
+    /// Matches any label and allows any properties.
+    pub fn star() -> Self {
+        DescriptorType {
+            label: LabelType::Star,
+            properties: PropertyType::open(),
+        }
+    }
+
+    /// Computes the greatest lower bound (meet) of two descriptors.
+    /// This merges both label and property constraints.
+    pub fn meet(a: &DescriptorType, b: &DescriptorType) -> DescriptorType {
+        DescriptorType {
+            label: LabelType::meet(a.label.clone(), b.label.clone()),
+            properties: PropertyType::meet(&a.properties, &b.properties),
+        }
+    }
+
+    /// Returns true if descriptor t1 is a subtype of descriptor t2.
+    /// This requires both label and property subtyping to hold.
+    pub fn is_subtype(t1: &DescriptorType, t2: &DescriptorType) -> bool {
+        LabelType::is_subtype(&t1.label, &t2.label)
+            && PropertyType::is_subtype(&t1.properties, &t2.properties)
+    }
+
+    /// Returns true if the descriptor is unsatisfiable (i.e., some inconsistency).
+    /// A descriptor is empty if its property type is empty.
+    pub fn is_empty(t: &DescriptorType) -> bool {
+        PropertyType::is_empty(&t.properties)
+    }
 }
 
 #[derive(PartialEq, Clone, Debug)]
