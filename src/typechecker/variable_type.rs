@@ -51,6 +51,18 @@ impl EdgeType {
             kind: EdgeKind::Undirected,
         }
     }
+
+    /// Converts this edge to a directed edge.
+    ///
+    /// If `reverse` is true, endpoint order is swapped.
+    pub fn to_directed(&self, reverse: bool) -> Self {
+        let (left, right) = if reverse {
+            (self.right.clone(), self.left.clone())
+        } else {
+            (self.left.clone(), self.right.clone())
+        };
+        EdgeType::directed(self.descriptor.clone(), left, right)
+    }
 }
 
 /// Represents the inferred or declared types of variables in a GQL query.
@@ -146,21 +158,11 @@ impl VariableType {
                         Ok(VariableType::Edge(EdgeType::directed(desc, left, right)))
                     }
                     (EdgeKind::Undirected, EdgeKind::Undirected) => {
-                        let as_dir1 = VariableType::Edge(EdgeType::directed(
-                            edge1.descriptor.clone(),
-                            edge1.left.clone(),
-                            edge1.right.clone(),
-                        ));
-                        let as_dir2 = VariableType::Edge(EdgeType::directed(
-                            edge2.descriptor.clone(),
-                            edge2.left.clone(),
-                            edge2.right.clone(),
-                        ));
-                        let as_dir2_flipped = VariableType::Edge(EdgeType::directed(
-                            edge2.descriptor.clone(),
-                            edge2.right.clone(),
-                            edge2.left.clone(),
-                        ));
+                        let as_dir1 = VariableType::Edge(edge1.to_directed(false));
+                        let edge2_a = edge2.to_directed(false);
+                        let edge2_b = edge2.to_directed(true);
+                        let as_dir2 = VariableType::Edge(edge2_a);
+                        let as_dir2_flipped = VariableType::Edge(edge2_b);
 
                         let n1 = VariableType::meet_edge(&as_dir1, &as_dir2);
                         let n2 = VariableType::meet_edge(&as_dir1, &as_dir2_flipped);
@@ -253,21 +255,11 @@ impl VariableType {
                         && DescriptorType::is_subtype(&e1.right.0, &e2.right.0)
                 }
                 (EdgeKind::Undirected, EdgeKind::Undirected) => {
-                    let dir1 = VariableType::Edge(EdgeType::directed(
-                        e1.descriptor.clone(),
-                        e1.left.clone(),
-                        e1.right.clone(),
-                    ));
-                    let dir2_normal = VariableType::Edge(EdgeType::directed(
-                        e2.descriptor.clone(),
-                        e2.left.clone(),
-                        e2.right.clone(),
-                    ));
-                    let dir2_flipped = VariableType::Edge(EdgeType::directed(
-                        e2.descriptor.clone(),
-                        e2.right.clone(),
-                        e2.left.clone(),
-                    ));
+                    let dir1 = VariableType::Edge(e1.to_directed(false));
+                    let e2_a = e2.to_directed(false);
+                    let e2_b = e2.to_directed(true);
+                    let dir2_normal = VariableType::Edge(e2_a);
+                    let dir2_flipped = VariableType::Edge(e2_b);
                     VariableType::is_subtype(&dir1, &dir2_normal)
                         || VariableType::is_subtype(&dir1, &dir2_flipped)
                 }
