@@ -1,5 +1,7 @@
 use crate::ast::{DescriptorType, SimpleType};
 
+use super::schema::Schema;
+
 /// Represents the type of a node variable in a GQL pattern.
 /// A node is typed by a DescriptorType (label + properties).
 #[derive(PartialEq, Clone, Debug)]
@@ -329,30 +331,5 @@ impl VariableType {
             VariableType::Union(t1, t2) => VariableType::is_empty(t1) && VariableType::is_empty(t2),
             VariableType::List(inner) => VariableType::is_empty(inner),
         }
-    }
-}
-
-// TODO: This is a placeholder. Replace with the real Schema type.
-/// Schema containing node and edge type definitions.
-#[derive(Default, Clone, Debug)]
-pub struct Schema {
-    pub nodes: Vec<VariableType>,
-    pub edges: Vec<VariableType>,
-}
-
-impl Schema {
-    pub fn new() -> Self {
-        Schema {
-            nodes: Vec::new(),
-            edges: Vec::new(),
-        }
-    }
-
-    pub fn add_node(&mut self, node: VariableType) {
-        self.nodes.push(node);
-    }
-
-    pub fn add_edge(&mut self, edge: VariableType) {
-        self.edges.push(edge);
     }
 }
