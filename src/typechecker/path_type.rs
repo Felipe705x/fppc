@@ -1,4 +1,5 @@
-use super::variable_type::{EdgeKind, EdgeType, Schema, VariableType};
+use super::schema::Schema;
+use super::variable_type::{EdgeKind, EdgeType, VariableType};
 
 /// Edge direction in a path.
 #[derive(PartialEq, Clone, Copy, Debug)]
