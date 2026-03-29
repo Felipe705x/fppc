@@ -1,14 +1,7 @@
+use crate::ast::EdgeDirection;
+
 use super::schema::Schema;
 use super::variable_type::{EdgeKind, EdgeType, VariableType};
-
-/// Edge direction in a path.
-#[derive(PartialEq, Clone, Copy, Debug)]
-pub enum Direction {
-    Right,
-    Left,
-    Undirected,
-    Any,
-}
 
 /// Path types representing sequences of nodes and edges.
 #[derive(PartialEq, Clone, Debug)]
@@ -29,6 +22,28 @@ pub enum PathType {
 impl Default for PathType {
     fn default() -> Self {
         PathType::Node(VariableType::node())
+    }
+}
+
+impl From<&EdgeType> for PathType {
+    fn from(edge: &EdgeType) -> Self {
+        match edge.kind {
+            EdgeKind::Directed => PathType::Edge {
+                path: Box::new(PathType::Node(edge.left.clone().into())),
+                node: edge.right.clone().into(),
+            },
+            EdgeKind::Undirected => {
+                let forward = edge.to_directed(false);
+                let reversed = edge.to_directed(true);
+                PathType::union(PathType::from(&forward), PathType::from(&reversed))
+            }
+        }
+    }
+}
+
+impl From<EdgeType> for PathType {
+    fn from(edge: EdgeType) -> Self {
+        PathType::from(&edge)
     }
 }
 
@@ -87,37 +102,22 @@ impl PathType {
     }
 
     /// Converts a VariableType to a PathType given a direction.
-    pub fn to_path_type(t: &VariableType, direction: Direction) -> PathType {
+    pub fn to_path_type(t: &VariableType, direction: EdgeDirection) -> PathType {
         match t {
             VariableType::Node(_) => PathType::Node(t.clone()),
             VariableType::Edge(edge) => match edge.kind {
-                EdgeKind::Directed => match direction {
-                    Direction::Right => PathType::Edge {
-                        path: Box::new(PathType::Node(edge.left.clone().into())),
-                        node: edge.right.clone().into(),
-                    },
-                    Direction::Left => {
-                        let flipped = VariableType::Edge(EdgeType::directed(
-                            edge.descriptor.clone(),
-                            edge.right.clone(),
-                            edge.left.clone(),
-                        ));
-                        PathType::to_path_type(&flipped, Direction::Right)
+                EdgeKind::Directed => {
+                    let forward = edge.to_directed(false);
+                    let reversed = edge.to_directed(true);
+                    match direction {
+                        EdgeDirection::Right => PathType::from(&forward),
+                        EdgeDirection::Left => PathType::from(&reversed),
+                        EdgeDirection::Any | EdgeDirection::None => {
+                            PathType::union(PathType::from(&forward), PathType::from(&reversed))
+                        }
                     }
-                    Direction::Any => PathType::union(
-                        PathType::to_path_type(t, Direction::Right),
-                        PathType::to_path_type(t, Direction::Left),
-                    ),
-                    Direction::Undirected => PathType::to_path_type(t, Direction::Any),
-                },
-                EdgeKind::Undirected => {
-                    let as_directed = VariableType::Edge(EdgeType::directed(
-                        edge.descriptor.clone(),
-                        edge.left.clone(),
-                        edge.right.clone(),
-                    ));
-                    PathType::to_path_type(&as_directed, Direction::Any)
                 }
+                EdgeKind::Undirected => PathType::from(edge),
             },
             VariableType::Union(t1, t2) => PathType::union(
                 PathType::to_path_type(t1, direction),

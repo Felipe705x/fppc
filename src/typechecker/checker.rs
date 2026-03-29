@@ -4,7 +4,7 @@ use crate::ast::{
 };
 use crate::parser;
 
-use super::path_type::{Direction, PathType};
+use super::path_type::PathType;
 use super::schema::Schema;
 use super::type_environment::TypeEnvironment;
 use super::variable_type::{EdgeKind, EdgeType, NodeType, VariableType};
@@ -103,15 +103,14 @@ impl Typechecker {
         match node {
             PathPattern::Node(desc) => {
                 let t = self.refine_pattern_node(desc);
-                let p = PathType::to_path_type(&t, Direction::Any);
+                let p = PathType::to_path_type(&t, EdgeDirection::Any);
                 let c = TypeEnvironment::create_context(desc, t);
                 TypecheckResult::new(p, c)
             }
 
             PathPattern::Edge(dir, desc) => {
                 let t = self.refine_pattern_edge(dir, desc);
-                let path_dir = Self::to_path_direction(dir);
-                let p = PathType::to_path_type(&t, path_dir);
+                let p = PathType::to_path_type(&t, *dir);
                 let c = TypeEnvironment::create_context(desc, t);
                 TypecheckResult::new(p, c)
             }
@@ -331,16 +330,6 @@ impl Typechecker {
     // -----------------------------------------------
     // Helpers
     // -----------------------------------------------
-
-    /// Converts an AST `EdgeDirection` to a path `Direction`.
-    fn to_path_direction(dir: &EdgeDirection) -> Direction {
-        match dir {
-            EdgeDirection::Right => Direction::Right,
-            EdgeDirection::Left => Direction::Left,
-            EdgeDirection::Any => Direction::Any,
-            EdgeDirection::None => Direction::Undirected,
-        }
-    }
 
     /// Extracts the lower bound from a quantifier.
     fn lower_bound(q: &Quantifier) -> u64 {
