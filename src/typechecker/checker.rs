@@ -204,26 +204,20 @@ impl Typechecker {
             Expr::AttributeLookup(entity, attribute) => match env.get(&entity.0) {
                 Some(t) => {
                     if matches!(t, VariableType::Zero) {
-                        self.warnings.push(format!(
-                            "Variable {} is bound to empty type",
-                            entity.0
-                        ));
+                        self.warnings
+                            .push(format!("Variable {} is bound to empty type", entity.0));
                         return SimpleType::Zero;
                     }
                     let at = t.get_attribute(&attribute.0);
                     if SimpleType::is_empty(&at) {
-                        self.warnings.push(format!(
-                            "Attribute {} not found in {:?}",
-                            attribute.0, t
-                        ));
+                        self.warnings
+                            .push(format!("Attribute {} not found in {:?}", attribute.0, t));
                     }
                     at
                 }
                 None => {
-                    self.errors.push(format!(
-                        "Variable {} not found in context",
-                        entity.0
-                    ));
+                    self.errors
+                        .push(format!("Variable {} not found in context", entity.0));
                     SimpleType::Zero
                 }
             },
@@ -280,15 +274,14 @@ impl Typechecker {
                         if SimpleType::gradual_eq(&t, &expected_t) {
                             result_t
                         } else {
-                            self.warnings.push(format!(
-                                "Unop {:?} on type {:?} is not defined",
-                                op, t
-                            ));
+                            self.warnings
+                                .push(format!("Unop {:?} on type {:?} is not defined", op, t));
                             SimpleType::Zero
                         }
                     }
                     None => {
-                        self.errors.push(format!("Unop {:?} undefined for type {:?}", op, t));
+                        self.errors
+                            .push(format!("Unop {:?} undefined for type {:?}", op, t));
                         SimpleType::Zero
                     }
                 }
@@ -522,14 +515,10 @@ mod tests {
                 SimpleType::Base(BaseType::Int),
             )])),
         );
-        let likes_desc = DescriptorType::new(
-            LabelType::Label("Likes".into()),
-            PropertyType::closed(),
-        );
-        let author_desc = DescriptorType::new(
-            LabelType::Label("Author".into()),
-            PropertyType::closed(),
-        );
+        let likes_desc =
+            DescriptorType::new(LabelType::Label("Likes".into()), PropertyType::closed());
+        let author_desc =
+            DescriptorType::new(LabelType::Label("Author".into()), PropertyType::closed());
 
         Schema::new(
             vec![
@@ -551,11 +540,7 @@ mod tests {
                     comment_node.clone(),
                 )),
                 // Author is directed (->)
-                VariableType::Edge(EdgeType::directed(
-                    author_desc,
-                    comment_node,
-                    student_node,
-                )),
+                VariableType::Edge(EdgeType::directed(author_desc, comment_node, student_node)),
             ],
         )
     }
