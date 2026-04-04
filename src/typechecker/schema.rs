@@ -1,6 +1,6 @@
 use crate::ast::DescriptorType;
 
-use super::variable_type::{NodeType, VariableType};
+use super::variable_type::{EdgeType, NodeType};
 
 /// Represents a user-defined schema for a GQL graph.
 ///
@@ -11,13 +11,13 @@ use super::variable_type::{NodeType, VariableType};
 /// Used for type checking and type refinement of query patterns.
 #[derive(Clone, Debug)]
 pub struct Schema {
-    pub nodes: Vec<VariableType>,
-    pub edges: Vec<VariableType>,
+    pub nodes: Vec<NodeType>,
+    pub edges: Vec<EdgeType>,
 }
 
 impl Schema {
     /// Constructs a schema from explicitly provided node and edge types.
-    pub fn new(nodes: Vec<VariableType>, edges: Vec<VariableType>) -> Self {
+    pub fn new(nodes: Vec<NodeType>, edges: Vec<EdgeType>) -> Self {
         Schema { nodes, edges }
     }
 
@@ -28,14 +28,14 @@ impl Schema {
     /// - one directional edge and one undirected edge, both with star descriptors
     pub fn star() -> Self {
         Schema {
-            nodes: vec![VariableType::node()],
+            nodes: vec![NodeType::default()],
             edges: vec![
-                VariableType::edge_directional(
+                EdgeType::directed(
                     DescriptorType::star(),
                     NodeType::default(),
                     NodeType::default(),
                 ),
-                VariableType::edge_non_directional(
+                EdgeType::undirected(
                     DescriptorType::star(),
                     NodeType::default(),
                     NodeType::default(),
