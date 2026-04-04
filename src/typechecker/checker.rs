@@ -103,14 +103,14 @@ impl Typechecker {
         match node {
             PathPattern::Node(desc) => {
                 let t = self.refine_pattern_node(desc);
-                let p = PathType::to_path_type(&t, EdgeDirection::Any);
+                let p = PathType::from((&t, EdgeDirection::Any));
                 let c = TypeEnvironment::create_context(desc, t);
                 TypecheckResult::new(p, c)
             }
 
             PathPattern::Edge(dir, desc) => {
                 let t = self.refine_pattern_edge(dir, desc);
-                let p = PathType::to_path_type(&t, *dir);
+                let p = PathType::from((&t, *dir));
                 let c = TypeEnvironment::create_context(desc, t);
                 TypecheckResult::new(p, c)
             }
@@ -434,21 +434,10 @@ mod tests {
         );
 
         Schema::new(
+            vec![account_node.clone(), dummy_person_node.clone()],
             vec![
-                VariableType::Node(account_node.clone()),
-                VariableType::Node(dummy_person_node.clone()),
-            ],
-            vec![
-                VariableType::Edge(EdgeType::directed(
-                    transfer_desc,
-                    account_node.clone(),
-                    account_node.clone(),
-                )),
-                VariableType::Edge(EdgeType::directed(
-                    foo_desc,
-                    account_node,
-                    dummy_person_node,
-                )),
+                EdgeType::directed(transfer_desc, account_node.clone(), account_node.clone()),
+                EdgeType::directed(foo_desc, account_node, dummy_person_node),
             ],
         )
     }
@@ -511,25 +500,17 @@ mod tests {
 
         Schema::new(
             vec![
-                VariableType::Node(teacher_node.clone()),
-                VariableType::Node(student_node.clone()),
-                VariableType::Node(comment_node.clone()),
+                teacher_node.clone(),
+                student_node.clone(),
+                comment_node.clone(),
             ],
             vec![
                 // Knows {since: int} — directed for refinement purposes
-                VariableType::Edge(EdgeType::directed(
-                    knows_desc,
-                    teacher_node.clone(),
-                    student_node.clone(),
-                )),
+                EdgeType::directed(knows_desc, teacher_node.clone(), student_node.clone()),
                 // Likes is directed (->)
-                VariableType::Edge(EdgeType::directed(
-                    likes_desc,
-                    teacher_node,
-                    comment_node.clone(),
-                )),
+                EdgeType::directed(likes_desc, teacher_node, comment_node.clone()),
                 // Author is directed (->)
-                VariableType::Edge(EdgeType::directed(author_desc, comment_node, student_node)),
+                EdgeType::directed(author_desc, comment_node, student_node),
             ],
         )
     }
@@ -863,7 +844,7 @@ mod tests {
 
         // Part 2: schema with closed {status: bool} — "stauts" doesn't exist → empty
         let schema = Schema::new(
-            vec![VariableType::node_with(DescriptorType::new(
+            vec![NodeType(DescriptorType::new(
                 LabelType::Star,
                 PropertyType::Closed(HashMap::from([(
                     "status".into(),
@@ -879,7 +860,7 @@ mod tests {
     #[test]
     fn test_example24() {
         let schema = Schema::new(
-            vec![VariableType::node_with(DescriptorType::new(
+            vec![NodeType(DescriptorType::new(
                 LabelType::Star,
                 PropertyType::Closed(HashMap::from([(
                     "status".into(),

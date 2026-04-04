@@ -1,18 +1,38 @@
-use crate::ast::EdgeDirection;
+use crate::ast::{DescriptorType, EdgeDirection};
 
 use super::schema::Schema;
-use super::variable_type::{EdgeKind, EdgeType, VariableType};
+use super::variable_type::{EdgeKind, EdgeType, NodeType, VariableType};
+
+#[derive(PartialEq, Clone, Debug)]
+pub struct NodePathType {
+    pub n: NodeType,
+}
+
+impl NodePathType {
+    pub fn new(n: NodeType) -> Self {
+        NodePathType { n }
+    }
+}
+
+impl From<NodeType> for NodePathType {
+    fn from(n: NodeType) -> Self {
+        NodePathType::new(n)
+    }
+}
+
+#[derive(PartialEq, Clone, Debug)]
+pub struct EdgePathType {
+    pub p1: Box<PathType>,
+    pub n2: NodePathType,
+}
 
 /// Path types representing sequences of nodes and edges.
 #[derive(PartialEq, Clone, Debug)]
 pub enum PathType {
     /// A single node in the path.
-    Node(VariableType),
+    Node(NodePathType),
     /// An edge connecting a path to a node: path - node.
-    Edge {
-        path: Box<PathType>,
-        node: VariableType,
-    },
+    Edge(EdgePathType),
     /// Union of two path types.
     Union(Box<PathType>, Box<PathType>),
     /// Bottom type (empty/inconsistent path).
@@ -21,51 +41,69 @@ pub enum PathType {
 
 impl Default for PathType {
     fn default() -> Self {
-        PathType::Node(VariableType::node())
+        PathType::Node(NodeType::default().into())
     }
 }
 
-impl From<&EdgeType> for PathType {
-    fn from(edge: &EdgeType) -> Self {
-        match edge.kind {
-            EdgeKind::Directed => PathType::Edge {
-                path: Box::new(PathType::Node(edge.left.clone().into())),
-                node: edge.right.clone().into(),
+impl From<(&VariableType, EdgeDirection)> for PathType {
+    fn from((t, direction): (&VariableType, EdgeDirection)) -> Self {
+        match t {
+            VariableType::Node(n) => PathType::Node(n.clone().into()),
+            VariableType::Edge(edge) => match edge.kind {
+                EdgeKind::Directed => PathType::directed_edge_to_path(edge, direction),
+                EdgeKind::Undirected => {
+                    let directed = edge.to_directed(false);
+                    PathType::directed_edge_to_path(&directed, EdgeDirection::Any)
+                }
             },
-            EdgeKind::Undirected => {
-                let forward = edge.to_directed(false);
-                let reversed = edge.to_directed(true);
-                PathType::union(PathType::from(&forward), PathType::from(&reversed))
-            }
+            VariableType::Union(t1, t2) => PathType::union(
+                PathType::from((&**t1, direction)),
+                PathType::from((&**t2, direction)),
+            ),
+            VariableType::Zero => PathType::Zero,
+            VariableType::List(_) => PathType::Zero,
         }
-    }
-}
-
-impl From<EdgeType> for PathType {
-    fn from(edge: EdgeType) -> Self {
-        PathType::from(&edge)
     }
 }
 
 impl PathType {
+    fn directed_edge_to_path(edge: &EdgeType, direction: EdgeDirection) -> PathType {
+        let make_step = |e: &EdgeType| {
+            PathType::Edge(EdgePathType {
+                p1: Box::new(PathType::Node(e.left.clone().into())),
+                n2: e.right.clone().into(),
+            })
+        };
+
+        let forward = make_step(edge);
+        let reversed_edge = edge.to_directed(true);
+        let reversed = make_step(&reversed_edge);
+
+        match direction {
+            EdgeDirection::Right => forward,
+            EdgeDirection::Left => reversed,
+            EdgeDirection::Any | EdgeDirection::None => PathType::union(forward, reversed),
+        }
+    }
+
     /// Creates a node path type.
-    pub fn node(n: VariableType) -> Self {
-        PathType::Node(n)
+    pub fn node(n: NodeType) -> Self {
+        PathType::Node(n.into())
     }
 
     /// Creates an edge path type.
-    pub fn edge(path: PathType, node: VariableType) -> Self {
-        PathType::Edge {
-            path: Box::new(path),
-            node,
-        }
+    pub fn edge(path: PathType, node: NodeType) -> Self {
+        PathType::Edge(EdgePathType {
+            p1: Box::new(path),
+            n2: node.into(),
+        })
     }
 
     /// Returns the length of the path (number of edges).
     pub fn len(&self) -> usize {
         match self {
             PathType::Node(_) => 0,
-            PathType::Edge { path, .. } => path.len() + 1,
+            PathType::Edge(edge) => edge.p1.len() + 1,
             PathType::Union(p1, p2) => p1.len().min(p2.len()),
             PathType::Zero => 0,
         }
@@ -75,7 +113,7 @@ impl PathType {
     pub fn is_empty(&self) -> bool {
         match self {
             PathType::Node(_) | PathType::Zero => true,
-            PathType::Edge { .. } => false,
+            PathType::Edge(_) => false,
             PathType::Union(p1, p2) => p1.is_empty() || p2.is_empty(),
         }
     }
@@ -101,67 +139,43 @@ impl PathType {
             .unwrap_or(PathType::Zero)
     }
 
-    /// Converts a VariableType to a PathType given a direction.
-    pub fn to_path_type(t: &VariableType, direction: EdgeDirection) -> PathType {
-        match t {
-            VariableType::Node(_) => PathType::Node(t.clone()),
-            VariableType::Edge(edge) => match edge.kind {
-                EdgeKind::Directed => {
-                    let forward = edge.to_directed(false);
-                    let reversed = edge.to_directed(true);
-                    match direction {
-                        EdgeDirection::Right => PathType::from(&forward),
-                        EdgeDirection::Left => PathType::from(&reversed),
-                        EdgeDirection::Any | EdgeDirection::None => {
-                            PathType::union(PathType::from(&forward), PathType::from(&reversed))
-                        }
-                    }
-                }
-                EdgeKind::Undirected => PathType::from(edge),
-            },
-            VariableType::Union(t1, t2) => PathType::union(
-                PathType::to_path_type(t1, direction),
-                PathType::to_path_type(t2, direction),
-            ),
-            VariableType::Zero => PathType::Zero,
-            VariableType::List(_) => PathType::Zero,
-        }
-    }
-
     /// Computes the meet (greatest lower bound) of two path types.
     pub fn meet(schema: &Schema, p1: &PathType, p2: &PathType) -> PathType {
         match (p1, p2) {
             (PathType::Zero, _) | (_, PathType::Zero) => PathType::Zero,
 
-            (PathType::Node(n1), PathType::Node(n2)) => match VariableType::meet(n1, n2) {
-                Ok(met) => PathType::Node(VariableType::refine(schema, &met)),
-                Err(_) => PathType::Zero,
-            },
+            (PathType::Node(n1), PathType::Node(n2)) => {
+                let met = VariableType::Node(NodeType(DescriptorType::meet(&n1.n.0, &n2.n.0)));
+                let nodes = VariableType::refine_to_nodes(schema, &met);
+                PathType::union_from_list(
+                    nodes
+                        .into_iter()
+                        .map(|n| PathType::Node(n.into()))
+                        .collect(),
+                )
+            }
 
-            (
-                PathType::Edge {
-                    path: p1_path,
-                    node: p1_node,
-                },
-                PathType::Node(n2),
-            ) => match VariableType::meet(p1_node, n2) {
-                Ok(met) => PathType::Edge {
-                    path: p1_path.clone(),
-                    node: VariableType::refine(schema, &met),
-                },
-                Err(_) => PathType::Zero,
-            },
+            (PathType::Edge(p1_edge), PathType::Node(n2)) => {
+                let met =
+                    VariableType::Node(NodeType(DescriptorType::meet(&p1_edge.n2.n.0, &n2.n.0)));
+                let nodes = VariableType::refine_to_nodes(schema, &met);
+                PathType::union_from_list(
+                    nodes
+                        .into_iter()
+                        .map(|n| {
+                            PathType::Edge(EdgePathType {
+                                p1: Box::new((*p1_edge.p1).clone()),
+                                n2: n.into(),
+                            })
+                        })
+                        .collect(),
+                )
+            }
 
-            (
-                _,
-                PathType::Edge {
-                    path: p2_path,
-                    node: p2_node,
-                },
-            ) => PathType::Edge {
-                path: Box::new(PathType::meet(schema, p1, p2_path)),
-                node: p2_node.clone(),
-            },
+            (_, PathType::Edge(p2_edge)) => PathType::Edge(EdgePathType {
+                p1: Box::new(PathType::meet(schema, p1, &p2_edge.p1)),
+                n2: p2_edge.n2.clone(),
+            }),
 
             (_, PathType::Union(u1, u2)) => {
                 let m1 = PathType::meet(schema, p1, u1);
@@ -193,9 +207,9 @@ impl PathType {
     pub fn is_unsatisfiable(&self) -> bool {
         match self {
             PathType::Zero => true,
-            PathType::Node(n) => VariableType::is_empty(n),
-            PathType::Edge { path, node } => {
-                path.is_unsatisfiable() || VariableType::is_empty(node)
+            PathType::Node(n) => DescriptorType::is_empty(&n.n.0),
+            PathType::Edge(edge) => {
+                edge.p1.is_unsatisfiable() || DescriptorType::is_empty(&edge.n2.n.0)
             }
             PathType::Union(p1, p2) => p1.is_unsatisfiable() && p2.is_unsatisfiable(),
         }

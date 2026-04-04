@@ -93,6 +93,24 @@ impl From<NodeType> for VariableType {
 }
 
 impl VariableType {
+    pub fn refine_to_nodes(schema: &Schema, t: &VariableType) -> Vec<NodeType> {
+        let mut out = Vec::new();
+        let mut stack = vec![VariableType::refine(schema, t)];
+
+        while let Some(curr) = stack.pop() {
+            match curr {
+                VariableType::Node(n) => out.push(n),
+                VariableType::Union(t1, t2) => {
+                    stack.push(*t2);
+                    stack.push(*t1);
+                }
+                _ => {}
+            }
+        }
+
+        out
+    }
+
     /// Creates a node variable type with a star descriptor.
     pub fn node() -> Self {
         VariableType::Node(NodeType::default())
@@ -285,8 +303,9 @@ impl VariableType {
                 let refined: Vec<VariableType> = schema
                     .nodes
                     .iter()
+                    .map(|n| VariableType::Node(n.clone()))
                     .filter(|n| VariableType::is_subtype(n, node))
-                    .filter_map(|n| VariableType::meet(n, node).ok())
+                    .filter_map(|n| VariableType::meet(&n, node).ok())
                     .collect();
                 VariableType::join_from_list(refined)
             }
@@ -294,8 +313,9 @@ impl VariableType {
                 let refined: Vec<VariableType> = schema
                     .edges
                     .iter()
+                    .map(|e| VariableType::Edge(e.clone()))
                     .filter(|e| VariableType::is_subtype(e, node))
-                    .filter_map(|e| VariableType::meet(e, node).ok())
+                    .filter_map(|e| VariableType::meet(&e, node).ok())
                     .collect();
                 VariableType::join_from_list(refined)
             }
