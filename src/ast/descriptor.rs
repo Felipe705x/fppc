@@ -228,6 +228,7 @@ impl PropertyType {
     /// Open types allow extra keys; closed types must match exactly.
     pub fn is_subtype(t1: &PropertyType, t2: &PropertyType) -> bool {
         match (t1, t2) {
+            (PropertyType::Zero, _) => true,
             (PropertyType::Open(_), PropertyType::Open(_)) => {
                 // Check common keys
                 t1.keys()
