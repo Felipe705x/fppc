@@ -36,23 +36,8 @@ impl SimpleType {
                 let meet2 = SimpleType::meet(a, t2);
                 SimpleType::union(&meet1, &meet2)
             }
-            _ if SimpleType::gradual_eq(a, b) => a.clone(),
+            _ if a == b => a.clone(),
             _ => SimpleType::Zero, // Incompatible types
-        }
-    }
-
-    /// Returns true if t1 and t2 are considered equal under the gradual type system.
-    /// StarType is treated as equal to anything.
-    pub fn gradual_eq(t1: &SimpleType, t2: &SimpleType) -> bool {
-        match (t1, t2) {
-            (SimpleType::Star, _) | (_, SimpleType::Star) => true,
-            (SimpleType::Union(t1a, t1b), _) => {
-                SimpleType::gradual_eq(t1a, t2) || SimpleType::gradual_eq(t1b, t2)
-            }
-            (_, SimpleType::Union(t2a, t2b)) => {
-                SimpleType::gradual_eq(t1, t2a) || SimpleType::gradual_eq(t1, t2b)
-            }
-            _ => t1 == t2,
         }
     }
 
@@ -63,7 +48,7 @@ impl SimpleType {
             (SimpleType::Star, _) | (_, SimpleType::Star) => true,
             (SimpleType::Zero, _) => true,
             (SimpleType::Union(t1a, t1b), _) => {
-                SimpleType::is_subtype(t1a, t2) && SimpleType::is_subtype(t1b, t2)
+                SimpleType::is_subtype(t1a, t2) || SimpleType::is_subtype(t1b, t2)
             }
             (_, SimpleType::Union(t2a, t2b)) => {
                 SimpleType::is_subtype(t1, t2a) || SimpleType::is_subtype(t1, t2b)

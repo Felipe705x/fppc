@@ -243,8 +243,8 @@ impl Typechecker {
 
                 match Self::binop_delta(op) {
                     Some((expected_t1, expected_t2, result_t)) => {
-                        if SimpleType::gradual_eq(&t1, &expected_t1)
-                            && SimpleType::gradual_eq(&t2, &expected_t2)
+                        if SimpleType::meet(&t1, &expected_t1) != SimpleType::Zero
+                            && SimpleType::meet(&t2, &expected_t2) != SimpleType::Zero
                         {
                             result_t
                         } else {
@@ -270,7 +270,7 @@ impl Typechecker {
 
                 match Self::unop_delta(op) {
                     Some((expected_t, result_t)) => {
-                        if SimpleType::gradual_eq(&t, &expected_t) {
+                        if SimpleType::meet(&t, &expected_t) != SimpleType::Zero {
                             result_t
                         } else {
                             self.warnings
