@@ -56,7 +56,6 @@ impl LabelType {
             (_, LabelType::Or(left, right)) => {
                 LabelType::is_subtype(l1, left) || LabelType::is_subtype(l1, right)
             }
-            _ => false,
         }
     }
 }
