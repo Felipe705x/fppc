@@ -216,6 +216,7 @@ impl VariableType {
     /// General meet operator (greatest lower bound).
     pub fn meet(a: &VariableType, b: &VariableType) -> Result<VariableType, String> {
         match (a, b) {
+            (VariableType::Zero, _) | (_, VariableType::Zero) => Ok(VariableType::Zero),
             (VariableType::List(inner_a), VariableType::List(inner_b)) => Ok(VariableType::List(
                 Box::new(VariableType::meet(inner_a, inner_b)?),
             )),
@@ -227,14 +228,13 @@ impl VariableType {
                 let r1 = VariableType::meet(t1, b);
                 let r2 = VariableType::meet(t2, b);
                 match (r1, r2) {
-                    (Ok(v1), Ok(v2)) => Ok(VariableType::Union(Box::new(v1), Box::new(v2))),
+                    (Ok(v1), Ok(v2)) => Ok(VariableType::join(v1, v2)),
                     (Ok(v1), Err(_)) => Ok(v1),
                     (Err(_), Ok(v2)) => Ok(v2),
                     (Err(e1), Err(_)) => Err(e1),
                 }
             }
             (_, VariableType::Union(_, _)) => VariableType::meet(b, a),
-            (VariableType::Zero, _) | (_, VariableType::Zero) => Ok(VariableType::Zero),
             _ => Err(format!(
                 "Meet undefined between variable types {:?} and {:?}",
                 a, b
@@ -263,6 +263,7 @@ impl VariableType {
     /// Checks if t1 is a subtype of t2.
     pub fn is_subtype(t1: &VariableType, t2: &VariableType) -> bool {
         match (t1, t2) {
+            (VariableType::Zero, _) => true,
             (VariableType::Node(n1), VariableType::Node(n2)) => {
                 DescriptorType::is_subtype(&n1.0, &n2.0)
             }

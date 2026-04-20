@@ -50,10 +50,12 @@ impl LabelType {
             (LabelType::And(left, right), _) => {
                 LabelType::is_subtype(left, l2) || LabelType::is_subtype(right, l2)
             }
+            (LabelType::Or(left, right), _) => {
+                LabelType::is_subtype(left, l2) && LabelType::is_subtype(right, l2)
+            }
             (_, LabelType::Or(left, right)) => {
                 LabelType::is_subtype(l1, left) || LabelType::is_subtype(l1, right)
             }
-            _ => false,
         }
     }
 }
