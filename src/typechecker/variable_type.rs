@@ -288,7 +288,7 @@ impl VariableType {
                 VariableType::is_subtype(inner1, inner2)
             }
             (VariableType::Union(t1a, t1b), _) => {
-                VariableType::is_subtype(t1a, t2) && VariableType::is_subtype(t1b, t2)
+                VariableType::is_subtype(t1a, t2) || VariableType::is_subtype(t1b, t2)
             }
             (_, VariableType::Union(t2a, t2b)) => {
                 VariableType::is_subtype(t1, t2a) || VariableType::is_subtype(t1, t2b)
